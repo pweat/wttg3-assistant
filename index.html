@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WTTG3 Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <span class="brand-prefix">&gt;_</span>
+        <h1>WTTG3 Assistant</h1>
+      </div>
+      <div class="header-meta">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button type="button" class="lang-btn active" data-lang="pl" title="Polski">PL</button>
+          <button type="button" class="lang-btn" data-lang="en" title="English">EN</button>
+        </div>
+        <span id="clock" class="clock">--:--:--</span>
+        <span class="status-dot" data-i18n-title="online" title="Online"></span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="panel tracker" aria-labelledby="tracker-title">
+        <div class="panel-head">
+          <h2 id="tracker-title" data-i18n="trackerTitle">Tracker Stron</h2>
+          <span class="panel-tag">PRIMARY</span>
+        </div>
+
+        <div class="wiki-tabs" role="tablist" data-i18n-aria="deepWikiAria">
+          <button type="button" class="wiki-tab active" role="tab" data-wiki="1" aria-selected="true">Deep Wiki 1</button>
+          <button type="button" class="wiki-tab" role="tab" data-wiki="2" aria-selected="false">Deep Wiki 2</button>
+          <button type="button" class="wiki-tab" role="tab" data-wiki="3" aria-selected="false">Deep Wiki 3</button>
+        </div>
+
+        <div class="tracker-input">
+          <label for="site-input" class="sr-only" data-i18n="siteInputLabel">Lista stron z gry</label>
+          <textarea id="site-input" spellcheck="false"></textarea>
+          <div class="tracker-actions">
+            <button type="button" id="analyze-btn" class="btn btn-primary" data-i18n="analyzeBtn">Przeanalizuj strony</button>
+            <button type="button" id="clear-tracker-btn" class="btn btn-ghost" data-i18n="clearTabBtn">Wyczyść zakładkę</button>
+            <span id="match-summary" class="match-summary"></span>
+          </div>
+        </div>
+
+        <div id="tracker-results" class="tracker-results"></div>
+      </section>
+
+      <section class="panel miners" aria-labelledby="miners-title">
+        <div class="panel-head">
+          <h2 id="miners-title" data-i18n="minersTitle">Koparki</h2>
+          <span class="panel-tag">DOS/min</span>
+        </div>
+        <div id="miners-list" class="miners-list"></div>
+      </section>
+
+      <section class="panel notebook" aria-labelledby="notebook-title">
+        <div class="panel-head">
+          <h2 id="notebook-title" data-i18n="notebookTitle">Smart Notatnik</h2>
+          <span class="panel-tag">KEYS</span>
+        </div>
+        <div class="notebook-wrap">
+          <div id="notebook-highlight" class="notebook-highlight" aria-hidden="true"></div>
+          <textarea id="notebook-input" class="notebook-input" spellcheck="false"></textarea>
+        </div>
+        <div id="detected-keys" class="detected-keys"></div>
+      </section>
+
+      <section class="panel faq" aria-labelledby="faq-title">
+        <div class="panel-head">
+          <h2 id="faq-title" data-i18n="infoTitle">Instrukcja / Zagrożenia</h2>
+        </div>
+        <div class="info-tabs" role="tablist" data-i18n-aria="infoAria">
+          <button type="button" class="info-tab active" data-info="help" aria-selected="true" data-i18n="tabHelp">Jak używać</button>
+          <button type="button" class="info-tab" data-info="faq" aria-selected="false" data-i18n="tabFaq">FAQ</button>
+          <button type="button" class="info-tab" data-info="threats" aria-selected="false" data-i18n="tabThreats">Zagrożenia</button>
+        </div>
+
+        <div id="info-help" class="info-pane active">
+          <ul id="help-list" class="faq-list"></ul>
+        </div>
+        <div id="info-faq" class="info-pane">
+          <ul id="faq-qa-list" class="faq-list faq-qa"></ul>
+        </div>
+        <div id="info-threats" class="info-pane">
+          <p class="threats-intro" data-i18n="threatsIntro"></p>
+          <div class="threats-table-wrap">
+            <table class="threats-table">
+              <thead>
+                <tr>
+                  <th data-i18n="threatColThreat">Zagrożenie</th>
+                  <th data-i18n="threatColCue">Sygnał</th>
+                  <th data-i18n="threatColCounter">Obrona</th>
+                </tr>
+              </thead>
+              <tbody id="threats-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
