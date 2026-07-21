@@ -188,6 +188,7 @@ const STORAGE_NOTES = "wttg3_notes";
 const STORAGE_WIKI_TABS = "wttg3_wiki_tabs";
 const STORAGE_ACTIVE_WIKI = "wttg3_active_wiki";
 const STORAGE_LANG = "wttg3_lang";
+const STORAGE_BOMB_SPOILER = "wttg3_bomb_spoiler";
 
 const I18N = {
   pl: {
@@ -236,6 +237,10 @@ const I18N = {
     threatColThreat: "Zagrożenie",
     threatColCue: "Sygnał",
     threatColCounter: "Obrona",
+    spoilerLabel: "SPOILER",
+    spoilerHidden: "Ukryte — kliknij, jeśli akceptujesz spoilery dotyczące The Bomb Maker.",
+    spoilerAccept: "Pokaż spoiler",
+    spoilerHide: "Ukryj ponownie",
     help: [
       ["Zakładki:", "najpierw Deep Wiki 1 — wklej listę i przeanalizuj. Potem przełącz na DW2 / DW3 i wklej osobno."],
       ["Format:", "Nazwa - opis — liczy się tylko tekst przed myślnikiem."],
@@ -309,6 +314,7 @@ const I18N = {
       },
       {
         name: "The Bomb Maker",
+        spoiler: true,
         cue: "Event po wejściu na jego stronę",
         counter:
           "Znajdź bombę i wpisz kod zanim skończy się czas. Kod dostaniesz na CryptChat — zapamiętaj go, potem znajdź bombę",
@@ -361,6 +367,10 @@ const I18N = {
     threatColThreat: "Threat",
     threatColCue: "Cue",
     threatColCounter: "Counter",
+    spoilerLabel: "SPOILER",
+    spoilerHidden: "Hidden — click if you accept spoilers about The Bomb Maker.",
+    spoilerAccept: "Reveal spoiler",
+    spoilerHide: "Hide again",
     help: [
       ["Tabs:", "start with Deep Wiki 1 — paste and analyze. Then switch to DW2 / DW3 and paste separately."],
       ["Format:", "Name - description — only the text before the dash counts."],
@@ -434,6 +444,7 @@ const I18N = {
       },
       {
         name: "The Bomb Maker",
+        spoiler: true,
         cue: "Triggered by visiting his website",
         counter:
           "Find the bomb and enter the code he sends before time runs out. He'll send the code in CryptChat — memorize it, then find the bomb",
@@ -834,16 +845,49 @@ function renderFaq() {
     .join("");
 }
 
+function isBombSpoilerAccepted() {
+  return localStorage.getItem(STORAGE_BOMB_SPOILER) === "1";
+}
+
+function setBombSpoilerAccepted(accepted) {
+  localStorage.setItem(STORAGE_BOMB_SPOILER, accepted ? "1" : "0");
+}
+
 function renderThreats() {
   const body = document.getElementById("threats-body");
+  const revealed = isBombSpoilerAccepted();
+
   body.innerHTML = t("threats")
-    .map(
-      (th) => `<tr>
-        <td class="threat-name">${escapeHtml(th.name)}</td>
+    .map((th) => {
+      if (th.spoiler && !revealed) {
+        return `<tr class="threat-spoiler-row">
+          <td class="threat-name">
+            ${escapeHtml(th.name)}
+            <span class="spoiler-badge">${escapeHtml(t("spoilerLabel"))}</span>
+          </td>
+          <td colspan="2" class="threat-spoiler-cell">
+            <span class="spoiler-hint">${escapeHtml(t("spoilerHidden"))}</span>
+            <button type="button" class="btn btn-ghost spoiler-reveal-btn" data-spoiler-action="reveal">
+              ${escapeHtml(t("spoilerAccept"))}
+            </button>
+          </td>
+        </tr>`;
+      }
+
+      const hideBtn = th.spoiler
+        ? ` <button type="button" class="spoiler-hide-btn" data-spoiler-action="hide" title="${escapeHtml(t("spoilerHide"))}">[${escapeHtml(t("spoilerHide"))}]</button>`
+        : "";
+
+      return `<tr class="${th.spoiler ? "threat-spoiler-revealed" : ""}">
+        <td class="threat-name">
+          ${escapeHtml(th.name)}
+          ${th.spoiler ? `<span class="spoiler-badge">${escapeHtml(t("spoilerLabel"))}</span>` : ""}
+          ${hideBtn}
+        </td>
         <td>${escapeHtml(th.cue)}</td>
         <td>${th.counter}</td>
-      </tr>`
-    )
+      </tr>`;
+    })
     .join("");
 }
 
@@ -1007,6 +1051,13 @@ function init() {
 
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
+  });
+
+  document.getElementById("threats-body").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-spoiler-action]");
+    if (!btn) return;
+    setBombSpoilerAccepted(btn.dataset.spoilerAction === "reveal");
+    renderThreats();
   });
 
   document.getElementById("analyze-btn").addEventListener("click", analyze);

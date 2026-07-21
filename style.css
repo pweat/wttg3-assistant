@@ -799,6 +799,70 @@ body {
   font-weight: 600;
 }
 
+.spoiler-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  border: 1px solid #8a7020;
+  border-radius: 2px;
+  background: rgba(232, 197, 71, 0.12);
+  vertical-align: middle;
+}
+
+.threat-spoiler-row td {
+  background: rgba(232, 197, 71, 0.04);
+}
+
+.threat-spoiler-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.spoiler-hint {
+  color: var(--text-muted);
+  font-size: 0.68rem;
+}
+
+.spoiler-reveal-btn {
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  border-color: #8a7020;
+  color: var(--amber);
+}
+
+.spoiler-reveal-btn:hover {
+  border-color: var(--amber);
+  color: var(--amber);
+  background: rgba(232, 197, 71, 0.12);
+}
+
+.spoiler-hide-btn {
+  font-family: inherit;
+  font-size: 0.58rem;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.spoiler-hide-btn:hover {
+  color: var(--amber);
+}
+
+.threat-spoiler-revealed td {
+  background: rgba(232, 197, 71, 0.05);
+}
+
 /* ===== Responsive ===== */
 
 @media (max-width: 960px) {
