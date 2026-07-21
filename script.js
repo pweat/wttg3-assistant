@@ -204,7 +204,37 @@ const I18N = {
     clearTabBtn: "Wyczyść zakładkę",
     tabHelp: "Jak używać",
     tabFaq: "FAQ",
+    tabSensors: "Sensory",
     tabThreats: "Zagrożenia",
+    sensorsIntro: "Setup 3 motion sensorów przy motelu — kolejność i kierunek mają znaczenie.",
+    sensorsDistinguishTitle: "Jak odróżnić Tannera od Lucasa",
+    sensorsDistinguishBody: [
+      "To setup na 3 motion sensory.",
+      "Żeby wiedzieć, kto nadchodzi, słuchaj długości bipania sensorów.",
+      "Tanner: bipanie ok. 2 sekundy — wciśnij panic button i zabezpiecz drzwi.",
+      "Lucas: ciągłe bipanie 5+ sekund (dla pewności możesz sprawdzić wejście główne).",
+    ],
+    sensor1Title: "Sensor 1 — prawy słupek motelu",
+    sensor1Body: [
+      "Pierwszy motion sensor ustaw na prawej stronie końcówki słupka motelu.",
+      "Musi być skierowany do wewnątrz, a nie w stronę drogi.",
+      "Gdy sensory są na prawym i lewym słupku, patrzą na siebie.",
+      "Ten sensor da alert, gdy Tanner nadchodzi z prawej strony (z perspektywy biura to lewa strona).",
+    ],
+    sensor2Title: "Sensor 2 — lewy słupek motelu",
+    sensor2Body: [
+      "Drugi motion sensor ustaw na lewej stronie końcówki słupka motelu.",
+      "Musi być skierowany do wewnątrz, a nie w stronę drogi.",
+      "Gdy sensory są na prawym i lewym słupku, patrzą na siebie.",
+      "Ten sensor da alert, gdy Tanner nadchodzi z lewej strony (z perspektywy biura to prawa strona).",
+    ],
+    sensor3Title: "Sensor 3 — tylne drzwi (Lucas)",
+    sensor3Body: [
+      "Trzeci motion sensor ustaw na tylnych drzwiach, którymi wchodzi Lucas (te same drzwi widoczne po cutscence Wade’a i chłopaków).",
+      "Daje alert, gdy Lucas próbuje otworzyć zamek (lockpicking) tylnych drzwi.",
+      "Bipanie trwa dłużej niż przy Tannerze — zwykle 6+ sekund, więc łatwo je odróżnić.",
+      "Masz wtedy sporo czasu, żeby zgasić światła i się schować.",
+    ],
     sitePlaceholder:
       "Deep Wiki {n} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
@@ -238,7 +268,7 @@ const I18N = {
     threatColCue: "Sygnał",
     threatColCounter: "Obrona",
     spoilerLabel: "SPOILER",
-    spoilerHidden: "Ukryte — kliknij, jeśli akceptujesz spoilery dotyczące The Bomb Maker.",
+    spoilerHidden: "Ukryte zagrożenie — kliknij, jeśli akceptujesz spoilery.",
     spoilerAccept: "Pokaż spoiler",
     spoilerHide: "Ukryj ponownie",
     help: [
@@ -334,7 +364,37 @@ const I18N = {
     clearTabBtn: "Clear tab",
     tabHelp: "How to use",
     tabFaq: "FAQ",
+    tabSensors: "Sensors",
     tabThreats: "Threats",
+    sensorsIntro: "3 motion sensor motel setup — placement and facing direction matter.",
+    sensorsDistinguishTitle: "How to distinguish between Tanner and Lucas",
+    sensorsDistinguishBody: [
+      "This is a setup for 3 motion sensors.",
+      "To know which enemy is approaching, listen to how long the motion sensors beep.",
+      "Tanner: beeps for ~2 seconds — click the panic button and secure the door.",
+      "Lucas: beeps consistently for 5+ seconds (you can check the front entrance to be sure).",
+    ],
+    sensor1Title: "Sensor 1 — right motel pole",
+    sensor1Body: [
+      "First motion sensor goes on the right side of the motel pole end.",
+      "Place it inwards, not facing the road.",
+      "When both are on the right and left poles, they will look at each other.",
+      "This sensor alerts you when Tanner is coming from the right side (left side viewed from the office).",
+    ],
+    sensor2Title: "Sensor 2 — left motel pole",
+    sensor2Body: [
+      "Second motion sensor goes on the left side of the motel pole end.",
+      "Place it inwards, not facing the road.",
+      "When both are on the right and left poles, they will look at each other.",
+      "This sensor alerts you when Tanner is coming from the left side (right side viewed from the office).",
+    ],
+    sensor3Title: "Sensor 3 — backdoor (Lucas)",
+    sensor3Body: [
+      "Third motion sensor goes on the backdoor where Lucas comes through (the backdoor seen when the Wade and his boys cutscene ends).",
+      "Alerts you when Lucas is trying to lockpick the backdoor.",
+      "The beeping lasts longer than Tanner — usually 6+ seconds, so you can easily tell them apart.",
+      "That gives you plenty of time to turn off lights and hide.",
+    ],
     sitePlaceholder:
       "Deep Wiki {n} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
@@ -368,7 +428,7 @@ const I18N = {
     threatColCue: "Cue",
     threatColCounter: "Counter",
     spoilerLabel: "SPOILER",
-    spoilerHidden: "Hidden — click if you accept spoilers about The Bomb Maker.",
+    spoilerHidden: "Hidden threat — click if you accept spoilers.",
     spoilerAccept: "Reveal spoiler",
     spoilerHide: "Hide again",
     help: [
@@ -845,6 +905,59 @@ function renderFaq() {
     .join("");
 }
 
+function renderSensors() {
+  const el = document.getElementById("sensors-list");
+  if (!el) return;
+
+  const sensors = [
+    {
+      num: 1,
+      titleKey: "sensor1Title",
+      bodyKey: "sensor1Body",
+      image: "assets/motion-sensor-1.png",
+    },
+    {
+      num: 2,
+      titleKey: "sensor2Title",
+      bodyKey: "sensor2Body",
+      image: "assets/motion-sensor-2.png",
+    },
+    {
+      num: 3,
+      titleKey: "sensor3Title",
+      bodyKey: "sensor3Body",
+      image: "assets/motion-sensor-3.png",
+    },
+  ];
+
+  const distinguish = `<article class="sensor-card sensor-card-tip">
+    <h3 class="sensor-title">${escapeHtml(t("sensorsDistinguishTitle"))}</h3>
+    <ul class="sensor-steps">
+      ${t("sensorsDistinguishBody")
+        .map((line) => `<li>${escapeHtml(line)}</li>`)
+        .join("")}
+    </ul>
+  </article>`;
+
+  const cards = sensors
+    .map((s) => {
+      const steps = t(s.bodyKey)
+        .map((line) => `<li>${escapeHtml(line)}</li>`)
+        .join("");
+
+      return `<article class="sensor-card">
+        <h3 class="sensor-title">${escapeHtml(t(s.titleKey))}</h3>
+        <ul class="sensor-steps">${steps}</ul>
+        <figure class="sensor-figure">
+          <img src="${s.image}" alt="${escapeHtml(t(s.titleKey))}" loading="lazy" />
+        </figure>
+      </article>`;
+    })
+    .join("");
+
+  el.innerHTML = `<p class="sensors-intro">${escapeHtml(t("sensorsIntro"))}</p>${distinguish}${cards}`;
+}
+
 function isBombSpoilerAccepted() {
   return localStorage.getItem(STORAGE_BOMB_SPOILER) === "1";
 }
@@ -861,8 +974,7 @@ function renderThreats() {
     .map((th) => {
       if (th.spoiler && !revealed) {
         return `<tr class="threat-spoiler-row">
-          <td class="threat-name">
-            ${escapeHtml(th.name)}
+          <td class="threat-name threat-name-hidden">
             <span class="spoiler-badge">${escapeHtml(t("spoilerLabel"))}</span>
           </td>
           <td colspan="2" class="threat-spoiler-cell">
@@ -929,6 +1041,7 @@ function applyLanguage() {
   applyStaticI18n();
   renderHelp();
   renderFaq();
+  renderSensors();
   renderThreats();
   renderMiners();
   renderCurrentTab();
