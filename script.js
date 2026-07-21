@@ -955,7 +955,7 @@ function renderSensors() {
     })
     .join("");
 
-  el.innerHTML = `<p class="sensors-intro">${escapeHtml(t("sensorsIntro"))}</p>${distinguish}${cards}`;
+  el.innerHTML = `<p class="sensors-intro">${escapeHtml(t("sensorsIntro"))}</p>${distinguish}<div class="sensors-grid">${cards}</div>`;
 }
 
 function isBombSpoilerAccepted() {

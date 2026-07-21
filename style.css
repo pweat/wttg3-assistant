@@ -188,11 +188,11 @@ body {
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr minmax(260px, 320px);
-  grid-template-rows: 1fr minmax(130px, 20%) minmax(150px, 22%);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 0.85fr) minmax(300px, 1.15fr);
   grid-template-areas:
     "tracker miners"
     "tracker notebook"
-    "faq    notebook";
+    "faq faq";
   gap: 10px;
 }
 
@@ -256,15 +256,15 @@ body {
 .info-tab {
   flex: 1;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-muted);
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
-  padding: 8px 6px;
+  padding: 7px 4px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
 }
@@ -695,15 +695,15 @@ body {
 
 .faq-list {
   list-style: none;
-  padding: 8px 12px 10px;
+  padding: 10px 14px 12px;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: var(--text-dim);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .faq-list li strong {
@@ -719,8 +719,8 @@ body {
 .faq-qa .faq-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding-bottom: 6px;
+  gap: 3px;
+  padding-bottom: 8px;
   border-bottom: 1px solid rgba(26, 58, 42, 0.45);
 }
 
@@ -731,13 +731,13 @@ body {
 
 .faq-q {
   color: var(--cyan) !important;
-  font-size: 0.74rem;
+  font-size: 0.82rem;
 }
 
 .faq-a {
   color: var(--text-dim);
-  font-size: 0.7rem;
-  line-height: 1.4;
+  font-size: 0.78rem;
+  line-height: 1.45;
 }
 
 /* ===== Sensors setup ===== */
@@ -749,55 +749,70 @@ body {
   padding: 8px 10px 10px;
   scrollbar-width: thin;
   scrollbar-color: var(--green-dim) var(--bg-input);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .sensors-intro {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
-  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.sensors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: start;
 }
 
 .sensor-card {
-  margin-bottom: 10px;
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
 }
 
 .sensor-card-tip {
   border-color: var(--amber);
   background: rgba(232, 197, 71, 0.06);
+  flex-shrink: 0;
 }
 
 .sensor-card-tip .sensor-title {
   color: var(--amber);
 }
 
+.sensor-card-tip .sensor-steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 16px;
+  list-style: disc;
+  padding-left: 18px;
+}
+
 .sensor-title {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--cyan);
-  margin-bottom: 6px;
 }
 
 .sensor-steps {
   list-style: disc;
   padding-left: 16px;
-  margin-bottom: 8px;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
   color: var(--text-dim);
   display: flex;
   flex-direction: column;
-  gap: 3px;
-}
-
-.sensor-pending {
-  font-size: 0.68rem;
-  color: var(--text-muted);
-  font-style: italic;
+  gap: 4px;
+  line-height: 1.4;
 }
 
 .sensor-figure {
@@ -805,22 +820,23 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
-  background: #000;
+  background: #050807;
+  flex: 1;
 }
 
 .sensor-figure img {
   display: block;
   width: 100%;
   height: auto;
-  max-height: 180px;
-  object-fit: cover;
+  max-height: min(280px, 32vh);
+  object-fit: contain;
   object-position: center;
 }
 
 .threats-intro {
   flex-shrink: 0;
-  padding: 6px 12px 4px;
-  font-size: 0.68rem;
+  padding: 8px 14px 4px;
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
@@ -828,7 +844,7 @@ body {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  padding: 0 8px 8px;
+  padding: 0 10px 10px;
   scrollbar-width: thin;
   scrollbar-color: var(--green-dim) var(--bg-input);
 }
@@ -836,7 +852,7 @@ body {
 .threats-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
 }
 
 .threats-table th {
@@ -846,19 +862,20 @@ body {
   text-align: left;
   font-weight: 500;
   color: var(--text-muted);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 4px 6px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
   z-index: 1;
 }
 
 .threats-table td {
-  padding: 5px 6px;
+  padding: 7px 8px;
   border-bottom: 1px solid rgba(26, 58, 42, 0.5);
   color: var(--text-dim);
   vertical-align: top;
+  line-height: 1.4;
 }
 
 .threats-table tr:hover td {
@@ -942,6 +959,26 @@ body {
 
 /* ===== Responsive ===== */
 
+@media (max-width: 1200px) {
+  .sensor-figure img {
+    max-height: min(260px, 34vh);
+  }
+}
+
+@media (max-width: 1100px) {
+  .sensors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-figure img {
+    max-height: min(340px, 40vh);
+  }
+
+  .sensor-card-tip .sensor-steps {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 @media (max-width: 960px) {
   html,
   body {
@@ -966,12 +1003,28 @@ body {
   }
 
   .tracker {
-    min-height: 55vh;
+    min-height: 50vh;
   }
 
   .miners,
   .notebook {
     min-height: 200px;
+  }
+
+  .faq {
+    min-height: 55vh;
+  }
+
+  .sensors-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-card-tip .sensor-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .sensor-figure img {
+    max-height: 50vh;
   }
 
   .tracker-results,
