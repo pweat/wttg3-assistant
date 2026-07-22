@@ -18,6 +18,7 @@
         <h1>WTTG3 Assistant</h1>
       </div>
       <div class="header-meta">
+        <button type="button" id="reset-btn" class="btn btn-ghost reset-btn" data-i18n="resetBtn" title="Reset">Reset</button>
         <div class="lang-switch" role="group" aria-label="Language">
           <button type="button" class="lang-btn active" data-lang="pl" title="Polski">PL</button>
           <button type="button" class="lang-btn" data-lang="en" title="English">EN</button>
@@ -35,9 +36,9 @@
         </div>
 
         <div class="wiki-tabs" role="tablist" data-i18n-aria="deepWikiAria">
-          <button type="button" class="wiki-tab active" role="tab" data-wiki="1" aria-selected="true">Deep Wiki 1</button>
-          <button type="button" class="wiki-tab" role="tab" data-wiki="2" aria-selected="false">Deep Wiki 2</button>
-          <button type="button" class="wiki-tab" role="tab" data-wiki="3" aria-selected="false">Deep Wiki 3</button>
+          <button type="button" class="wiki-tab active" role="tab" data-wiki="1" aria-selected="true">Codex of Silence</button>
+          <button type="button" class="wiki-tab" role="tab" data-wiki="2" aria-selected="false">Toxic Delights</button>
+          <button type="button" class="wiki-tab" role="tab" data-wiki="3" aria-selected="false">The Red Mirror</button>
         </div>
 
         <div class="tracker-input">
@@ -53,26 +54,32 @@
         <div id="tracker-results" class="tracker-results"></div>
       </section>
 
-      <section class="panel miners" aria-labelledby="miners-title">
-        <div class="panel-head">
-          <h2 id="miners-title" data-i18n="minersTitle">Koparki</h2>
-          <span class="panel-tag">DOS/min</span>
-        </div>
-        <div id="miners-list" class="miners-list"></div>
-      </section>
+      <aside class="sidebar">
+        <section class="panel miners" aria-labelledby="miners-title">
+          <div class="panel-head">
+            <h2 id="miners-title" data-i18n="minersTitle">Koparki</h2>
+            <span class="panel-tag">DOS/min</span>
+          </div>
+          <div id="miners-list" class="miners-list"></div>
+        </section>
 
-      <section class="panel notebook" aria-labelledby="notebook-title">
-        <div class="panel-head">
-          <h2 id="notebook-title" data-i18n="notebookTitle">Smart Notatnik</h2>
-          <span class="panel-tag">KEYS</span>
-        </div>
-        <div class="notebook-wrap">
-          <div id="notebook-highlight" class="notebook-highlight" aria-hidden="true"></div>
-          <textarea id="notebook-input" class="notebook-input" spellcheck="false"></textarea>
-        </div>
-        <div id="detected-keys" class="detected-keys"></div>
-        <div id="key-assembly" class="key-assembly"></div>
-      </section>
+        <div class="resize-handle resize-handle-v" id="resize-sidebar" role="separator" aria-orientation="horizontal" tabindex="0" title="Drag to resize"></div>
+
+        <section class="panel notebook" aria-labelledby="notebook-title">
+          <div class="panel-head">
+            <h2 id="notebook-title" data-i18n="notebookTitle">Smart Notatnik</h2>
+            <span class="panel-tag">KEYS</span>
+          </div>
+          <div class="notebook-wrap">
+            <div id="notebook-highlight" class="notebook-highlight" aria-hidden="true"></div>
+            <textarea id="notebook-input" class="notebook-input" spellcheck="false"></textarea>
+          </div>
+          <div id="detected-keys" class="detected-keys"></div>
+          <div id="key-assembly" class="key-assembly"></div>
+        </section>
+      </aside>
+
+      <div class="resize-handle resize-handle-h" id="resize-faq" role="separator" aria-orientation="vertical" tabindex="0" title="Drag to resize"></div>
 
       <section class="panel faq" aria-labelledby="faq-title">
         <div class="panel-head">

@@ -168,6 +168,19 @@ body {
   background: var(--green);
 }
 
+.reset-btn {
+  padding: 4px 10px;
+  font-size: 0.68rem;
+  border-color: rgba(255, 77, 106, 0.35);
+  color: var(--red);
+}
+
+.reset-btn:hover {
+  border-color: var(--red);
+  color: #ff8a9b;
+  background: rgba(255, 77, 106, 0.1);
+}
+
 .clock {
   color: var(--cyan);
   letter-spacing: 0.06em;
@@ -188,18 +201,96 @@ body {
   min-height: 0;
   display: grid;
   grid-template-columns: 1fr minmax(260px, 320px);
-  grid-template-rows: minmax(0, 1fr) minmax(0, 0.85fr) minmax(300px, 1.15fr);
+  grid-template-rows: minmax(0, 1fr) 6px var(--faq-h, 280px);
   grid-template-areas:
-    "tracker miners"
-    "tracker notebook"
+    "tracker sidebar"
+    "faqhandle faqhandle"
     "faq faq";
-  gap: 10px;
+  gap: 0 10px;
+  row-gap: 0;
 }
 
-.tracker { grid-area: tracker; }
-.miners { grid-area: miners; }
-.notebook { grid-area: notebook; }
+.tracker { grid-area: tracker; margin-bottom: 10px; }
+.sidebar { grid-area: sidebar; margin-bottom: 10px; }
+#resize-faq { grid-area: faqhandle; }
 .faq { grid-area: faq; }
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0;
+}
+
+.sidebar .miners {
+  flex: 0 0 var(--miners-h, 38%);
+  min-height: 80px;
+  max-height: calc(100% - 100px);
+}
+
+.sidebar .notebook {
+  flex: 1 1 auto;
+  min-height: 120px;
+}
+
+.resize-handle {
+  flex-shrink: 0;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+}
+
+.resize-handle::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--border-bright);
+  border-radius: 2px;
+  opacity: 0.7;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.resize-handle:hover::after,
+.resize-handle:focus-visible::after,
+body.is-resizing .resize-handle::after {
+  background: var(--green);
+  opacity: 1;
+}
+
+.resize-handle-v {
+  height: 8px;
+  cursor: row-resize;
+  margin: 2px 0;
+}
+
+.resize-handle-v::after {
+  width: 36px;
+  height: 3px;
+}
+
+.resize-handle-h {
+  height: 8px;
+  cursor: row-resize;
+  margin: 2px 0 4px;
+  align-self: stretch;
+}
+
+.resize-handle-h::after {
+  width: 48px;
+  height: 3px;
+}
+
+body.is-resizing {
+  cursor: row-resize;
+  user-select: none;
+}
+
+body.is-resizing iframe,
+body.is-resizing textarea {
+  pointer-events: none;
+}
 
 /* ===== Panels ===== */
 
@@ -267,6 +358,13 @@ body {
   padding: 7px 4px;
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.wiki-tab {
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  line-height: 1.2;
 }
 
 .wiki-tab:hover,
@@ -475,6 +573,14 @@ body {
 .status-fbi { color: var(--amber); }
 .status-careful { color: var(--amber); }
 .status-unknown { color: var(--text-muted); }
+
+.site-time.dead-time {
+  color: var(--red);
+}
+
+.site-time.dead-time {
+  color: var(--red);
+}
 
 .checks {
   display: flex;
@@ -1239,23 +1345,30 @@ body {
     grid-template-rows: auto;
     grid-template-areas:
       "tracker"
-      "miners"
-      "notebook"
+      "sidebar"
+      "faqhandle"
       "faq";
     overflow: visible;
   }
 
   .tracker {
     min-height: 50vh;
+    margin-bottom: 10px;
   }
 
-  .miners,
-  .notebook {
-    min-height: 200px;
+  .sidebar {
+    min-height: 420px;
+    margin-bottom: 10px;
+  }
+
+  .sidebar .miners,
+  .sidebar .notebook {
+    min-height: 180px;
+    max-height: none;
   }
 
   .faq {
-    min-height: 55vh;
+    min-height: 50vh;
   }
 
   .sensors-grid {

@@ -112,7 +112,7 @@ const WEBSITES = [
   { name: "Wraith Cam", status: "dead", deepWiki: 3, time: null },
 
   // —— Permanently dead (formerly "probably") ——
-  { name: "Backrooms", status: "dead", deepWiki: 3, time: null },
+  { name: "My Backroom", status: "dead", deepWiki: 3, time: null },
   { name: "Deep Journal", status: "dead", deepWiki: 3, time: null },
   { name: "Hollow Key", status: "dead", deepWiki: 3, time: null },
   { name: "Silent Auction", status: "dead", deepWiki: 3, time: null },
@@ -189,6 +189,17 @@ const STORAGE_WIKI_TABS = "wttg3_wiki_tabs";
 const STORAGE_ACTIVE_WIKI = "wttg3_active_wiki";
 const STORAGE_LANG = "wttg3_lang";
 const STORAGE_BOMB_SPOILER = "wttg3_bomb_spoiler";
+const STORAGE_LAYOUT = "wttg3_layout";
+
+const WIKI_NAMES = {
+  1: "Codex of Silence",
+  2: "Toxic Delights",
+  3: "The Red Mirror",
+};
+
+function wikiName(n) {
+  return WIKI_NAMES[n] || `Wiki ${n}`;
+}
 
 const I18N = {
   pl: {
@@ -197,7 +208,7 @@ const I18N = {
     minersTitle: "Koparki",
     notebookTitle: "Smart notatnik",
     infoTitle: "Instrukcja / Zagrożenia",
-    deepWikiAria: "Deep Wiki",
+    deepWikiAria: "Listy wiki",
     infoAria: "Informacje",
     siteInputLabel: "Lista stron z gry",
     analyzeBtn: "Przeanalizuj strony",
@@ -236,10 +247,10 @@ const I18N = {
       "Masz wtedy sporo czasu, żeby zgasić światła i się schować.",
     ],
     sitePlaceholder:
-      "Deep Wiki {n} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
+      "{name} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
       "Notatki, kody, klucze…\n4 - cb4f1f4c  (zaszyfrowany)\n4 - 9f09      (zdekryptowany → montaż)",
-    emptyTab: "Deep Wiki {n}: wklej listę stron i kliknij „Przeanalizuj strony”.",
+    emptyTab: "{name}: wklej listę stron i kliknij „Przeanalizuj strony”.",
     unknownSection: "Inne / Nieznane",
     colSite: "Strona",
     colTime: "Okno czasowe",
@@ -251,8 +262,14 @@ const I18N = {
     flagKeyFinder: "Sprawdzono z key finderem",
     activeNow: "Aktywna teraz",
     timeAlways: "Zawsze (24/7)",
+    timeDead: "Martwa / zawsze zamknięta",
+    timeFbi: "Zajęta przez FBI",
+    timeUnknown: "—",
     timeHourly: "co godz. :{start} – :{end}",
-    matchSummary: "DW{n}: {matched}/{total}",
+    resetBtn: "Reset",
+    resetConfirm: "Wyczyścić wszystko (notatki, listy, postęp, layout) i wrócić do ustawień fabrycznych?",
+    resizeHint: "Przeciągnij, aby zmienić wysokość",
+    matchSummary: "{name}: {matched}/{total}",
     unknownCount: " · nieznane: {n}",
     detectedKeys: "Wykryte klucze:",
     copyKeyHint: "Kliknij, aby skopiować",
@@ -281,10 +298,10 @@ const I18N = {
     spoilerAccept: "Pokaż spoiler",
     spoilerHide: "Ukryj ponownie",
     help: [
-      ["Tracker / zakładki:", "Deep Wiki 1, 2 i 3 to osobne zakładki. Wklej listę ze swojej wiki, kliknij „Przeanalizuj strony”, potem przełącz na kolejną DW i wklej osobno."],
+      ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
       ["Postęp:", "przy każdej stronie: Odwiedzono / Przejrzano / Znaleziono klucz / Sprawdzono z key finderem — zapis lokalny w przeglądarce."],
-      ["Okna czasowe:", "strony timed działają w podanych minutach każdej godziny (np. :00–:14). Zielona kropka = aktywna teraz."],
+      ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
       ["Montaż 1–8:", "zdekryptowane kody wpadają w sloty #1–#8 według numeru (kolejność wklejenia dowolna). Cel: zebrać wszystkie 8."],
@@ -292,7 +309,8 @@ const I18N = {
       ["Sensory:", "zakładka z setupem 3 motion sensorów + jak odróżnić Tannera od Lucasa po długości bipania."],
       ["Zagrożenia:", "tabela cue/obrona. Jeden wpis jest pod spoilerem — odsłania się dopiero po akceptacji."],
       ["FAQ:", "krótkie pytania o hazard, meth, Bomb Maker, source code i pauzę przy komputerze."],
-      ["Język i zapis:", "PL/EN w prawym górnym rogu. Notatki, postęp i listy DW zapisują się lokalnie (zostają po zamknięciu przeglądarki)."],
+      ["Język i zapis:", "PL/EN w prawym górnym rogu. Notatki, postęp i listy DW zapisują się lokalnie. Reset czyści wszystko."],
+      ["Layout:", "przeciągnij uchwyty między koparkami/notatnikiem oraz nad sekcją instrukcji, aby zmienić wysokości."],
     ],
     faq: [
       {
@@ -371,7 +389,7 @@ const I18N = {
     minersTitle: "Miners",
     notebookTitle: "Smart Notebook",
     infoTitle: "Guide / Threats",
-    deepWikiAria: "Deep Wiki",
+    deepWikiAria: "Wiki lists",
     infoAria: "Information",
     siteInputLabel: "Site list from the game",
     analyzeBtn: "Analyze sites",
@@ -410,10 +428,10 @@ const I18N = {
       "That gives you plenty of time to turn off lights and hide.",
     ],
     sitePlaceholder:
-      "Deep Wiki {n} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
+      "{name} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
       "Notes, codes, keys…\n4 - cb4f1f4c  (encrypted)\n4 - 9f09      (decrypted → assembly)",
-    emptyTab: "Deep Wiki {n}: paste a site list and click “Analyze sites”.",
+    emptyTab: "{name}: paste a site list and click “Analyze sites”.",
     unknownSection: "Other / Unknown",
     colSite: "Site",
     colTime: "Time window",
@@ -425,8 +443,14 @@ const I18N = {
     flagKeyFinder: "Checked with key finder",
     activeNow: "Active now",
     timeAlways: "Always (24/7)",
+    timeDead: "Dead / permanently offline",
+    timeFbi: "FBI seized",
+    timeUnknown: "—",
     timeHourly: "hourly :{start} – :{end}",
-    matchSummary: "DW{n}: {matched}/{total}",
+    resetBtn: "Reset",
+    resetConfirm: "Clear everything (notes, lists, progress, layout) and restore factory defaults?",
+    resizeHint: "Drag to resize",
+    matchSummary: "{name}: {matched}/{total}",
     unknownCount: " · unknown: {n}",
     detectedKeys: "Detected keys:",
     copyKeyHint: "Click to copy",
@@ -455,10 +479,10 @@ const I18N = {
     spoilerAccept: "Reveal spoiler",
     spoilerHide: "Hide again",
     help: [
-      ["Tracker / tabs:", "Deep Wiki 1, 2 and 3 are separate tabs. Paste your wiki list, click “Analyze sites”, then switch DW and paste the next list."],
+      ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
       ["Progress:", "per site: Visited / Reviewed / Key found / Checked with key finder — saved locally in the browser."],
-      ["Time windows:", "timed sites are up during those minutes of every hour (e.g. :00–:14). Green dot = active right now."],
+      ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
       ["Assembly 1–8:", "decrypted codes fill slots #1–#8 by number (paste order does not matter). Goal: collect all 8."],
@@ -466,7 +490,8 @@ const I18N = {
       ["Sensors:", "tab with the 3 motion-sensor setup + how to tell Tanner from Lucas by beep length."],
       ["Threats:", "cue/counter table. One entry is behind a spoiler — revealed only after you accept."],
       ["FAQ:", "short tips on gambling, meth, Bomb Maker, source code, and pausing at the computer."],
-      ["Language & save:", "PL/EN in the top-right. Notes, progress and DW lists persist locally (survive browser restart)."],
+      ["Language & save:", "PL/EN in the top-right. Notes, progress and DW lists persist locally. Reset clears everything."],
+      ["Layout:", "drag the handles between miners/notebook and above the guide section to change heights."],
     ],
     faq: [
       {
@@ -593,23 +618,20 @@ const SITE_INDEX = (() => {
   }
   map.set(normalizeName("Eat My ****"), WEBSITES.find((s) => s.name.startsWith("Eat My")));
   map.set(normalizeName("Eat My Shit"), WEBSITES.find((s) => s.name.startsWith("Eat My")));
-  // typo variant from older charts
+  // typo / alternate names
   map.set(normalizeName("Bizzare Propagation"), WEBSITES.find((s) => s.name === "Bizarre Propagation"));
+  map.set(normalizeName("Backrooms"), WEBSITES.find((s) => s.name === "My Backroom"));
+  map.set(normalizeName("My Backrooms"), WEBSITES.find((s) => s.name === "My Backroom"));
   return map;
 })();
 
-function formatTimeWindow(time) {
-  if (!time) return t("timeAlways");
+function formatTimeWindow(site) {
+  if (!site || site.status === "unknown") return t("timeUnknown");
+  if (site.status === "dead") return t("timeDead");
+  if (site.status === "fbi") return t("timeFbi");
+  if (!site.time) return t("timeAlways");
   const pad = (n) => String(n).padStart(2, "0");
-  return t("timeHourly", { start: pad(time.start), end: pad(time.end) });
-}
-
-function isCurrentlyActive(site) {
-  if (!site.time) {
-    return site.status === "always" || site.status === "careful";
-  }
-  const m = new Date().getMinutes();
-  return m >= site.time.start && m <= site.time.end;
+  return t("timeHourly", { start: pad(site.time.start), end: pad(site.time.end) });
 }
 
 function loadFlags() {
@@ -757,14 +779,13 @@ function renderSiteRows(sites, flags) {
     .map((site) => {
       const statusClass = `status-${site.status}`;
       const label = statusLabel(site.status);
-      const activeNow =
-        site.status !== "unknown" && isCurrentlyActive(site)
-          ? ` <span style="color:var(--green)" title="${escapeHtml(t("activeNow"))}">●</span>`
-          : "";
+      const timeText = formatTimeWindow(site);
+      const timeClass =
+        site.status === "dead" || site.status === "fbi" ? "dead-time" : "";
 
       return `<tr>
-        <td class="site-name">${escapeHtml(site.name)}${activeNow}</td>
-        <td class="site-time">${escapeHtml(formatTimeWindow(site.time))}</td>
+        <td class="site-name">${escapeHtml(site.name)}</td>
+        <td class="site-time ${timeClass}">${escapeHtml(timeText)}</td>
         <td class="site-status ${statusClass}">${escapeHtml(label)}</td>
         <td><div class="checks">${renderCheckButtons(site.name, flags)}</div></td>
       </tr>`;
@@ -802,7 +823,7 @@ function renderCurrentTab() {
     parts.push(`
       <div class="results-section">
         <div class="results-section-title">
-          Deep Wiki ${activeWiki}
+          ${escapeHtml(wikiName(activeWiki))}
           <span class="count">(${matched.length})</span>
         </div>
         ${renderSiteRows(matched, flags)}
@@ -823,13 +844,13 @@ function renderCurrentTab() {
   }
 
   if (!parts.length) {
-    container.innerHTML = `<p class="placeholder">${escapeHtml(t("emptyTab", { n: activeWiki }))}</p>`;
+    container.innerHTML = `<p class="placeholder">${escapeHtml(t("emptyTab", { name: wikiName(activeWiki) }))}</p>`;
     document.getElementById("match-summary").textContent = "";
   } else {
     container.innerHTML = parts.join("");
     const total = matched.length + unknown.length;
     document.getElementById("match-summary").textContent =
-      t("matchSummary", { n: activeWiki, matched: matched.length, total }) +
+      t("matchSummary", { name: wikiName(activeWiki), matched: matched.length, total }) +
       (unknown.length ? t("unknownCount", { n: unknown.length }) : "");
   }
 
@@ -842,7 +863,7 @@ function switchWiki(wiki) {
 
   activeWiki = wiki;
   siteInput.value = wikiTabs[activeWiki].input;
-  siteInput.placeholder = t("sitePlaceholder", { n: activeWiki });
+  siteInput.placeholder = t("sitePlaceholder", { name: wikiName(activeWiki) });
 
   document.querySelectorAll(".wiki-tab").forEach((btn) => {
     const on = Number(btn.dataset.wiki) === activeWiki;
@@ -1043,8 +1064,15 @@ function applyStaticI18n() {
     el.setAttribute("aria-label", t(el.dataset.i18nAria));
   });
 
-  document.getElementById("site-input").placeholder = t("sitePlaceholder", { n: activeWiki });
+  document.getElementById("site-input").placeholder = t("sitePlaceholder", { name: wikiName(activeWiki) });
   document.getElementById("notebook-input").placeholder = t("notebookPlaceholder");
+
+  document.querySelectorAll(".resize-handle").forEach((el) => {
+    el.title = t("resizeHint");
+  });
+
+  const resetBtn = document.getElementById("reset-btn");
+  if (resetBtn) resetBtn.title = t("resetBtn");
 
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
@@ -1286,6 +1314,126 @@ function syncNotebook() {
 }
 
 /* ==========================================================================
+   Layout resize + factory reset
+   ========================================================================== */
+
+function loadLayout() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_LAYOUT) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function saveLayout(layout) {
+  localStorage.setItem(STORAGE_LAYOUT, JSON.stringify(layout));
+}
+
+function applyLayout() {
+  const layout = loadLayout();
+  const root = document.documentElement;
+  if (layout.minersH) root.style.setProperty("--miners-h", `${layout.minersH}%`);
+  if (layout.faqH) root.style.setProperty("--faq-h", `${layout.faqH}px`);
+}
+
+function initResizeHandles() {
+  const sidebar = document.querySelector(".sidebar");
+  const sidebarHandle = document.getElementById("resize-sidebar");
+  const faqHandle = document.getElementById("resize-faq");
+  const grid = document.querySelector(".grid");
+
+  function startDrag(onMove) {
+    document.body.classList.add("is-resizing");
+    const move = (ev) => onMove(ev.clientY);
+    const up = () => {
+      document.body.classList.remove("is-resizing");
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+
+  if (sidebarHandle && sidebar) {
+    sidebarHandle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const rect = sidebar.getBoundingClientRect();
+      startDrag((clientY) => {
+        const pct = ((clientY - rect.top) / rect.height) * 100;
+        const clamped = Math.min(75, Math.max(15, pct));
+        document.documentElement.style.setProperty("--miners-h", `${clamped}%`);
+        const layout = loadLayout();
+        layout.minersH = Math.round(clamped);
+        saveLayout(layout);
+      });
+    });
+  }
+
+  if (faqHandle && grid) {
+    faqHandle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const gridRect = grid.getBoundingClientRect();
+      startDrag((clientY) => {
+        const h = gridRect.bottom - clientY;
+        const clamped = Math.min(gridRect.height * 0.7, Math.max(140, h));
+        document.documentElement.style.setProperty("--faq-h", `${clamped}px`);
+        const layout = loadLayout();
+        layout.faqH = Math.round(clamped);
+        saveLayout(layout);
+      });
+    });
+  }
+}
+
+function factoryReset() {
+  if (!confirm(t("resetConfirm"))) return;
+
+  const keys = [
+    STORAGE_FLAGS,
+    STORAGE_NOTES,
+    STORAGE_WIKI_TABS,
+    STORAGE_ACTIVE_WIKI,
+    STORAGE_BOMB_SPOILER,
+    STORAGE_LAYOUT,
+  ];
+  for (const key of keys) localStorage.removeItem(key);
+  // keep language preference
+
+  wikiTabs = {
+    1: { input: "", matched: [], unknown: [] },
+    2: { input: "", matched: [], unknown: [] },
+    3: { input: "", matched: [], unknown: [] },
+  };
+  activeWiki = 1;
+  activeInfoTab = "help";
+
+  document.documentElement.style.removeProperty("--miners-h");
+  document.documentElement.style.removeProperty("--faq-h");
+
+  const siteInput = document.getElementById("site-input");
+  const notebook = document.getElementById("notebook-input");
+  if (siteInput) siteInput.value = "";
+  if (notebook) notebook.value = "";
+
+  document.querySelectorAll(".wiki-tab").forEach((btn) => {
+    const on = Number(btn.dataset.wiki) === 1;
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-selected", String(on));
+  });
+
+  document.querySelectorAll(".info-tab").forEach((btn) => {
+    const on = btn.dataset.info === "help";
+    btn.classList.toggle("active", on);
+    btn.setAttribute("aria-selected", String(on));
+  });
+  document.querySelectorAll(".info-pane").forEach((pane) => {
+    pane.classList.toggle("active", pane.id === "info-help");
+  });
+
+  applyLanguage();
+}
+
+/* ==========================================================================
    Clock & events
    ========================================================================== */
 
@@ -1302,6 +1450,8 @@ function init() {
 
   tickClock();
   setInterval(tickClock, 1000);
+  applyLayout();
+  initResizeHandles();
 
   loadWikiTabs();
   const savedWiki = Number(localStorage.getItem(STORAGE_ACTIVE_WIKI) || "1");
@@ -1327,6 +1477,8 @@ function init() {
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
   });
+
+  document.getElementById("reset-btn").addEventListener("click", factoryReset);
 
   document.getElementById("threats-body").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-spoiler-action]");
@@ -1393,10 +1545,6 @@ function init() {
     copyKeyToClipboard(btn.dataset.copyFinal, btn);
     btn.setAttribute("title", t("assemblyCopied"));
   });
-
-  setInterval(() => {
-    if (wikiTabs[activeWiki].matched.length) renderCurrentTab();
-  }, 60_000);
 }
 
 document.addEventListener("DOMContentLoaded", init);
