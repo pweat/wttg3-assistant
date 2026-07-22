@@ -588,6 +588,31 @@ body.is-resizing textarea {
   justify-content: flex-start;
 }
 
+.check-head {
+  text-align: center !important;
+  width: 36px;
+  min-width: 32px;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  white-space: nowrap;
+}
+
+.check-cell {
+  text-align: center;
+  width: 36px;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+  vertical-align: middle;
+}
+
+.site-table tr.row-untouched td {
+  background: rgba(232, 197, 71, 0.05);
+}
+
+.site-table tr.row-untouched td.site-name {
+  box-shadow: inset 2px 0 0 var(--amber);
+}
+
 .check-btn {
   width: 26px;
   height: 26px;
@@ -614,8 +639,32 @@ body.is-resizing textarea {
 }
 
 .check-btn:hover {
-  border-color: var(--border-bright);
-  color: var(--text-dim);
+  filter: brightness(1.15);
+}
+
+/* Distinct OFF colors per flag */
+.check-btn[data-flag="visited"]:not(.active) {
+  color: rgba(51, 255, 153, 0.45);
+  border-color: rgba(26, 153, 77, 0.45);
+  background: rgba(51, 255, 153, 0.04);
+}
+
+.check-btn[data-flag="reviewed"]:not(.active) {
+  color: rgba(61, 224, 255, 0.45);
+  border-color: rgba(26, 122, 138, 0.5);
+  background: rgba(61, 224, 255, 0.04);
+}
+
+.check-btn[data-flag="key"]:not(.active) {
+  color: rgba(232, 197, 71, 0.5);
+  border-color: rgba(138, 112, 32, 0.55);
+  background: rgba(232, 197, 71, 0.05);
+}
+
+.check-btn[data-flag="keyfinder"]:not(.active) {
+  color: rgba(196, 77, 255, 0.45);
+  border-color: rgba(122, 42, 154, 0.5);
+  background: rgba(196, 77, 255, 0.05);
 }
 
 .check-btn.active[data-flag="visited"] {
@@ -1399,12 +1448,20 @@ body.is-resizing textarea {
     display: none;
   }
 
-  .checks {
-    gap: 4px;
+  .check-head,
+  .check-cell {
+    width: 28px;
+    min-width: 26px;
+    padding-left: 1px !important;
+    padding-right: 1px !important;
   }
 
   .check-btn {
     width: 24px;
     height: 24px;
+  }
+
+  .check-head {
+    font-size: 0.55rem;
   }
 }

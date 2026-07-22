@@ -260,6 +260,10 @@ const I18N = {
     flagReviewed: "Przejrzano dokładnie",
     flagKey: "Znaleziono klucz",
     flagKeyFinder: "Sprawdzono z key finderem",
+    flagShortVisited: "Odw.",
+    flagShortReviewed: "Przej.",
+    flagShortKey: "Klucz",
+    flagShortKeyFinder: "KF",
     activeNow: "Aktywna teraz",
     timeAlways: "Zawsze (24/7)",
     timeDead: "Martwa / zawsze zamknięta",
@@ -300,7 +304,7 @@ const I18N = {
     help: [
       ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
-      ["Postęp:", "przy każdej stronie: Odwiedzono / Przejrzano / Znaleziono klucz / Sprawdzono z key finderem — zapis lokalny w przeglądarce."],
+      ["Postęp:", "4 kolumny: Odw. / Przej. / Klucz / KF. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -441,6 +445,10 @@ const I18N = {
     flagReviewed: "Fully reviewed",
     flagKey: "Key found",
     flagKeyFinder: "Checked with key finder",
+    flagShortVisited: "Vis.",
+    flagShortReviewed: "Rev.",
+    flagShortKey: "Key",
+    flagShortKeyFinder: "KF",
     activeNow: "Active now",
     timeAlways: "Always (24/7)",
     timeDead: "Dead / permanently offline",
@@ -481,7 +489,7 @@ const I18N = {
     help: [
       ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
-      ["Progress:", "per site: Visited / Reviewed / Key found / Checked with key finder — saved locally in the browser."],
+      ["Progress:", "4 columns: Vis. / Rev. / Key / KF. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -755,25 +763,34 @@ function updateTabIndicators() {
   });
 }
 
-function renderCheckButtons(siteName, flags) {
-  const f = flags[siteName] || {};
-  const defs = [
-    { flag: "visited", title: t("flagVisited"), icon: "visited" },
-    { flag: "reviewed", title: t("flagReviewed"), icon: "reviewed" },
-    { flag: "key", title: t("flagKey"), icon: "key" },
-    { flag: "keyfinder", title: t("flagKeyFinder"), icon: "keyfinder" },
-  ];
+const PROGRESS_FLAGS = [
+  { flag: "visited", titleKey: "flagVisited", shortKey: "flagShortVisited", icon: "visited" },
+  { flag: "reviewed", titleKey: "flagReviewed", shortKey: "flagShortReviewed", icon: "reviewed" },
+  { flag: "key", titleKey: "flagKey", shortKey: "flagShortKey", icon: "key" },
+  { flag: "keyfinder", titleKey: "flagKeyFinder", shortKey: "flagShortKeyFinder", icon: "keyfinder" },
+];
 
-  return defs
-    .map((d) => {
-      const active = f[d.flag] ? "active" : "";
-      return `<button type="button" class="check-btn ${active}" data-site="${escapeHtml(siteName)}" data-flag="${d.flag}" title="${escapeHtml(d.title)}" aria-label="${escapeHtml(d.title)}" aria-pressed="${!!f[d.flag]}">${svgIcon(d.icon)}</button>`;
-    })
-    .join("");
+function renderCheckCell(siteName, flags, def) {
+  const f = flags[siteName] || {};
+  const active = f[def.flag] ? "active" : "";
+  const title = t(def.titleKey);
+  return `<td class="check-cell">
+    <button type="button" class="check-btn ${active}" data-site="${escapeHtml(siteName)}" data-flag="${def.flag}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}" aria-pressed="${!!f[def.flag]}">${svgIcon(def.icon)}</button>
+  </td>`;
+}
+
+function hasAnyProgress(siteName, flags) {
+  const f = flags[siteName] || {};
+  return PROGRESS_FLAGS.some((d) => !!f[d.flag]);
 }
 
 function renderSiteRows(sites, flags) {
   if (!sites.length) return "";
+
+  const headChecks = PROGRESS_FLAGS.map(
+    (d) =>
+      `<th class="check-head" title="${escapeHtml(t(d.titleKey))}">${escapeHtml(t(d.shortKey))}</th>`
+  ).join("");
 
   const rows = sites
     .map((site) => {
@@ -782,12 +799,16 @@ function renderSiteRows(sites, flags) {
       const timeText = formatTimeWindow(site);
       const timeClass =
         site.status === "dead" || site.status === "fbi" ? "dead-time" : "";
+      const untouched = hasAnyProgress(site.name, flags) ? "" : "row-untouched";
+      const checkCells = PROGRESS_FLAGS.map((d) =>
+        renderCheckCell(site.name, flags, d)
+      ).join("");
 
-      return `<tr>
+      return `<tr class="${untouched}">
         <td class="site-name">${escapeHtml(site.name)}</td>
         <td class="site-time ${timeClass}">${escapeHtml(timeText)}</td>
         <td class="site-status ${statusClass}">${escapeHtml(label)}</td>
-        <td><div class="checks">${renderCheckButtons(site.name, flags)}</div></td>
+        ${checkCells}
       </tr>`;
     })
     .join("");
@@ -798,7 +819,7 @@ function renderSiteRows(sites, flags) {
         <th>${escapeHtml(t("colSite"))}</th>
         <th>${escapeHtml(t("colTime"))}</th>
         <th>${escapeHtml(t("colStatus"))}</th>
-        <th>${escapeHtml(t("colProgress"))}</th>
+        ${headChecks}
       </tr>
     </thead>
     <tbody>${rows}</tbody>
@@ -1508,8 +1529,7 @@ function init() {
     if (!flags[site]) flags[site] = {};
     flags[site][flag] = !flags[site][flag];
     saveFlags(flags);
-    btn.classList.toggle("active", !!flags[site][flag]);
-    btn.setAttribute("aria-pressed", String(!!flags[site][flag]));
+    renderCurrentTab();
   });
 
   document.querySelectorAll(".info-tab").forEach((btn) => {
