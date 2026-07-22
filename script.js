@@ -238,7 +238,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notatki, kody, klucze…\nnp. 4 - cb4f1f4c\nKlucze w formacie numer - kod zostaną podświetlone.",
+      "Notatki, kody, klucze…\nnp. 4 - cb4f1f4c\nWykrywane tylko: cyfra + myślnik + kod.",
     emptyTab: "Deep Wiki {n}: wklej listę stron i kliknij „Przeanalizuj strony”.",
     unknownSection: "Inne / Nieznane",
     colSite: "Strona",
@@ -280,7 +280,7 @@ const I18N = {
       ["Checkboxy:", "Odwiedzono / Przejrzano / Klucz / Key finder — zapis lokalny w przeglądarce."],
       ["Okna czasowe:", "strony timed działają w podanych minutach każdej godziny (np. :00–:14)."],
       ["Koparki:", "wybieraj najwyższe DOS/min w odblokowanym tierze VM Grid."],
-      ["Notatnik:", "klucze w formacie „4 - cb4f1f4c” (numer + kod) są wykrywane i numerowane."],
+      ["Notatnik:", "klucze tylko w formacie „4 - cb4f1f4c” (cyfra, myślnik, kod)."],
       ["Język:", "przełącznik PL / EN w prawym górnym rogu."],
     ],
     faq: [
@@ -401,7 +401,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notes, codes, keys…\ne.g. 4 - cb4f1f4c\nKeys in number - code format will be highlighted.",
+      "Notes, codes, keys…\ne.g. 4 - cb4f1f4c\nOnly digit + dash + code is detected.",
     emptyTab: "Deep Wiki {n}: paste a site list and click “Analyze sites”.",
     unknownSection: "Other / Unknown",
     colSite: "Site",
@@ -443,7 +443,7 @@ const I18N = {
       ["Checkboxes:", "Visited / Reviewed / Key / Key finder — saved locally in the browser."],
       ["Time windows:", "timed sites are up during those minutes of every hour (e.g. :00–:14)."],
       ["Miners:", "pick the highest DOS/min in your unlocked VM Grid tier."],
-      ["Notebook:", "keys like “4 - cb4f1f4c” (number + code) are detected and numbered."],
+      ["Notebook:", "keys only in “4 - cb4f1f4c” format (digit, dash, code)."],
       ["Language:", "PL / EN switch in the top-right corner."],
     ],
     faq: [
@@ -535,10 +535,8 @@ function statusLabel(status) {
   return t(`status_${status}`) || status;
 }
 
-/** Game keys: "4 - cb4f1f4c" or bare codes */
-const NUMBERED_KEY_REGEX = /(\d{1,3})\s*([-–—:.])\s*([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
-const BARE_KEY_REGEX = /\b([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
-const KEY_TEST = /^[A-Za-z0-9][A-Za-z0-9_-]{5,19}$/;
+/** Game keys only: "4 - cb4f1f4c" (number + separator + code) */
+const NUMBERED_KEY_REGEX = /(\d{1,3})\s*([-–—])\s*([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
 
 /** Per-tab state: { 1: { input, matchedNames, unknown }, … } */
 let activeWiki = 1;
@@ -642,7 +640,7 @@ function parsePastedLines(raw) {
     .map(extractSiteName)
     .filter((l) => l.length > 0)
     .filter((l) => !/^[-–=]{3,}/.test(l))
-    .filter((l) => !/^(site|deep wiki|always|time)/i.test(l));
+    .filter((l) => !/^(site\b|deep wiki|always available|time[- ]?limited|timed websites)/i.test(l));
 }
 
 function matchSites(names) {
@@ -1062,36 +1060,28 @@ function setLanguage(next) {
    Smart Notebook
    ========================================================================== */
 
-function looksLikeKey(token) {
-  if (!KEY_TEST.test(token)) return false;
-  const hasDigit = /\d/.test(token);
-  const hasUpper = /[A-Z]/.test(token);
-  const hasLower = /[a-z]/.test(token);
-  if (hasDigit) return true;
-  if (hasUpper && hasLower && token.length >= 8) return true;
-  if (/^[A-F0-9_-]{6,}$/i.test(token)) return true;
-  if (/^[A-Z0-9_-]{8,}$/.test(token)) return true;
+function looksLikeKeyCode(token) {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{5,19}$/.test(token)) return false;
+  // Prefer hex-ish / mixed codes; reject short all-letter labels
+  if (/\d/.test(token)) return true;
+  if (/^[A-Fa-f0-9_-]{6,}$/.test(token)) return true;
+  if (/[A-Z]/.test(token) && /[a-z]/.test(token) && token.length >= 8) return true;
   return false;
 }
 
 /**
- * Find keys in text. Prefer "N - code" form; also bare codes.
+ * Keys only in form: "N - code" (digit(s), dash, then code).
  * Returns [{ index, length, num, code, raw }] sorted by index.
  */
 function findKeyMatches(text) {
   const matches = [];
-  const covered = new Set();
-
   const numbered = new RegExp(NUMBERED_KEY_REGEX.source, "g");
   let m;
   while ((m = numbered.exec(text)) !== null) {
     const code = m[3];
-    if (!looksLikeKey(code)) continue;
-    const start = m.index;
-    const end = m.index + m[0].length;
-    for (let i = start; i < end; i++) covered.add(i);
+    if (!looksLikeKeyCode(code)) continue;
     matches.push({
-      index: start,
+      index: m.index,
       length: m[0].length,
       num: m[1],
       sep: m[2],
@@ -1099,31 +1089,6 @@ function findKeyMatches(text) {
       raw: m[0],
     });
   }
-
-  const bare = new RegExp(BARE_KEY_REGEX.source, "g");
-  while ((m = bare.exec(text)) !== null) {
-    const code = m[1];
-    if (!looksLikeKey(code)) continue;
-    // skip if overlapping a numbered match
-    let overlap = false;
-    for (let i = m.index; i < m.index + m[0].length; i++) {
-      if (covered.has(i)) {
-        overlap = true;
-        break;
-      }
-    }
-    if (overlap) continue;
-    matches.push({
-      index: m.index,
-      length: m[0].length,
-      num: null,
-      sep: null,
-      code,
-      raw: m[0],
-    });
-  }
-
-  matches.sort((a, b) => a.index - b.index);
   return matches;
 }
 
@@ -1131,36 +1096,19 @@ function extractKeys(text) {
   const seen = new Set();
   const keys = [];
   for (const match of findKeyMatches(text)) {
-    const id = match.num ? `${match.num}:${match.code}` : match.code;
+    const id = `${match.num}:${match.code}`;
     if (seen.has(id)) continue;
     seen.add(id);
     keys.push(match);
   }
-  // Prefer numbered keys first in the chip list, then by number
-  keys.sort((a, b) => {
-    if (a.num && b.num) return Number(a.num) - Number(b.num);
-    if (a.num && !b.num) return -1;
-    if (!a.num && b.num) return 1;
-    return a.code.localeCompare(b.code);
-  });
+  keys.sort((a, b) => Number(a.num) - Number(b.num));
   return keys;
 }
 
-function formatKeyMark(match) {
-  if (match.num) {
-    return `<mark class="key-mark key-mark-numbered"><span class="key-num">#${escapeHtml(match.num)}</span><span class="key-sep"> — </span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
-  }
-  return `<mark class="key-mark"><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
-}
-
 function formatKeyChip(match) {
-  const copyValue = match.num ? `${match.num} - ${match.code}` : match.code;
-  const label = match.num
-    ? `<span class="key-chip-num">#${escapeHtml(match.num)}</span><span class="key-chip-code">${escapeHtml(match.code)}</span>`
-    : `<span class="key-chip-code">${escapeHtml(match.code)}</span>`;
-  const numberedClass = match.num ? " key-chip-numbered" : "";
-
-  return `<button type="button" class="key-chip${numberedClass}" data-copy="${escapeHtml(copyValue)}" title="${escapeHtml(t("copyKeyHint"))}">${label}</button>`;
+  const copyValue = `${match.num} - ${match.code}`;
+  const label = `<span class="key-chip-num">#${escapeHtml(match.num)}</span><span class="key-chip-code">${escapeHtml(match.code)}</span>`;
+  return `<button type="button" class="key-chip key-chip-numbered" data-copy="${escapeHtml(copyValue)}" title="${escapeHtml(t("copyKeyHint"))}">${label}</button>`;
 }
 
 function copyKeyToClipboard(value, btn) {
@@ -1208,12 +1156,8 @@ function highlightNotes(text) {
 
   for (const match of matches) {
     result += escapeHtml(text.slice(last, match.index));
-    if (match.num) {
-      const sep = match.raw.slice(match.num.length, match.raw.length - match.code.length);
-      result += `<mark class="key-mark key-mark-numbered"><span class="key-num">${escapeHtml(match.num)}</span><span class="key-sep">${escapeHtml(sep)}</span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
-    } else {
-      result += `<mark class="key-mark"><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
-    }
+    const sep = match.raw.slice(match.num.length, match.raw.length - match.code.length);
+    result += `<mark class="key-mark key-mark-numbered"><span class="key-num">${escapeHtml(match.num)}</span><span class="key-sep">${escapeHtml(sep)}</span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
     last = match.index + match.length;
   }
 
