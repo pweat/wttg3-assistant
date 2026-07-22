@@ -550,28 +550,28 @@ body.is-resizing textarea {
 }
 
 .site-table .site-name {
-  width: 36%;
+  width: 30%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .site-table .site-time {
-  width: 22%;
+  width: 18%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .site-table .site-status {
-  width: 16%;
+  width: 14%;
   white-space: nowrap;
 }
 
 .check-head {
   text-align: center !important;
-  width: 8.5%;
-  min-width: 44px;
+  width: 9.5%;
+  min-width: 42px;
   padding-left: 4px !important;
   padding-right: 4px !important;
   white-space: nowrap;
@@ -579,8 +579,8 @@ body.is-resizing textarea {
 
 .check-cell {
   text-align: center;
-  width: 8.5%;
-  min-width: 44px;
+  width: 9.5%;
+  min-width: 42px;
   padding-left: 4px !important;
   padding-right: 4px !important;
   vertical-align: middle;
@@ -672,6 +672,12 @@ body.is-resizing textarea {
   background: rgba(196, 77, 255, 0.05);
 }
 
+.check-btn[data-flag="file"]:not(.active) {
+  color: rgba(0, 229, 255, 0.45);
+  border-color: rgba(0, 140, 160, 0.5);
+  background: rgba(0, 229, 255, 0.04);
+}
+
 .check-btn.active[data-flag="visited"] {
   color: var(--green);
   border-color: var(--green-dim);
@@ -690,6 +696,13 @@ body.is-resizing textarea {
   border-color: #7a2a9a;
   background: rgba(196, 77, 255, 0.15);
   box-shadow: 0 0 10px rgba(196, 77, 255, 0.25);
+}
+
+.check-btn.active[data-flag="file"] {
+  color: var(--cyan);
+  border-color: #008ca0;
+  background: rgba(0, 229, 255, 0.12);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.22);
 }
 
 /* ===== Miners ===== */

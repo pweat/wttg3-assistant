@@ -259,9 +259,11 @@ const I18N = {
     flagVisited: "Odwiedzono",
     flagKey: "Znaleziono klucz",
     flagKeyFinder: "Sprawdzono z key finderem",
+    flagFile: "Był link do pliku",
     flagShortVisited: "Odw.",
     flagShortKey: "Klucz",
     flagShortKeyFinder: "KF",
+    flagShortFile: "Plik",
     activeNow: "Aktywna teraz",
     timeAlways: "Zawsze (24/7)",
     timeDead: "Martwa / zawsze zamknięta",
@@ -302,7 +304,7 @@ const I18N = {
     help: [
       ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
-      ["Postęp:", "3 kolumny: Odw. / Klucz / KF. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
+      ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -442,9 +444,11 @@ const I18N = {
     flagVisited: "Visited",
     flagKey: "Key found",
     flagKeyFinder: "Checked with key finder",
+    flagFile: "Had a file link",
     flagShortVisited: "Vis.",
     flagShortKey: "Key",
     flagShortKeyFinder: "KF",
+    flagShortFile: "File",
     activeNow: "Active now",
     timeAlways: "Always (24/7)",
     timeDead: "Dead / permanently offline",
@@ -485,7 +489,7 @@ const I18N = {
     help: [
       ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
-      ["Progress:", "3 columns: Vis. / Key / KF. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
+      ["Progress:", "4 columns: Vis. / Key / KF / File. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -665,6 +669,9 @@ function svgIcon(type) {
   if (type === "keyfinder") {
     return `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>`;
   }
+  if (type === "file") {
+    return `<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>`;
+  }
   return `<svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`;
 }
 
@@ -760,6 +767,7 @@ const PROGRESS_FLAGS = [
   { flag: "visited", titleKey: "flagVisited", shortKey: "flagShortVisited", icon: "visited" },
   { flag: "key", titleKey: "flagKey", shortKey: "flagShortKey", icon: "key" },
   { flag: "keyfinder", titleKey: "flagKeyFinder", shortKey: "flagShortKeyFinder", icon: "keyfinder" },
+  { flag: "file", titleKey: "flagFile", shortKey: "flagShortFile", icon: "file" },
 ];
 
 function renderCheckCell(siteName, flags, def) {
