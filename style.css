@@ -532,6 +532,13 @@ body {
   background: rgba(232, 197, 71, 0.15);
 }
 
+.check-btn.active[data-flag="keyfinder"] {
+  color: var(--magenta);
+  border-color: #7a2a9a;
+  background: rgba(196, 77, 255, 0.15);
+  box-shadow: 0 0 10px rgba(196, 77, 255, 0.25);
+}
+
 /* ===== Miners ===== */
 
 .miners-list {
@@ -654,6 +661,27 @@ body {
   box-shadow: 0 0 0 1px rgba(232, 197, 71, 0.35);
 }
 
+.notebook-highlight mark.key-mark-numbered {
+  background: rgba(196, 77, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(196, 77, 255, 0.4);
+  padding: 0 3px;
+}
+
+.notebook-highlight .key-num {
+  color: var(--magenta);
+  font-weight: 700;
+}
+
+.notebook-highlight .key-sep {
+  color: var(--text-muted);
+}
+
+.notebook-highlight .key-code {
+  color: var(--amber);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .detected-keys {
   flex-shrink: 0;
   padding: 6px 10px 8px;
@@ -661,6 +689,10 @@ body {
   color: var(--text-dim);
   min-height: 28px;
   border-top: 1px solid transparent;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
 }
 
 .detected-keys.has-keys {
@@ -668,15 +700,70 @@ body {
 }
 
 .detected-keys .key-chip {
-  display: inline-block;
-  margin: 2px 4px 0 0;
-  padding: 1px 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 2px 8px 2px 4px;
   border: 1px solid #8a7020;
   border-radius: 2px;
   color: var(--amber);
   background: rgba(232, 197, 71, 0.1);
-  font-size: 0.68rem;
+  font-family: inherit;
+  font-size: 0.7rem;
   letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.detected-keys .key-chip:hover {
+  background: rgba(232, 197, 71, 0.22);
+  border-color: var(--amber);
+  box-shadow: 0 0 8px rgba(232, 197, 71, 0.25);
+}
+
+.detected-keys .key-chip-numbered {
+  border-color: #7a2a9a;
+  background: rgba(196, 77, 255, 0.1);
+}
+
+.detected-keys .key-chip-numbered:hover {
+  background: rgba(196, 77, 255, 0.22);
+  border-color: var(--magenta);
+  box-shadow: 0 0 8px rgba(196, 77, 255, 0.3);
+}
+
+.detected-keys .key-chip.copied {
+  border-color: var(--green-dim);
+  background: rgba(51, 255, 153, 0.18);
+  box-shadow: var(--glow-green);
+}
+
+.detected-keys .key-chip.copied .key-chip-num {
+  background: rgba(51, 255, 153, 0.4);
+  color: var(--green);
+}
+
+.detected-keys .key-chip.copied .key-chip-code {
+  color: var(--green);
+}
+
+.detected-keys .key-chip-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  padding: 1px 5px;
+  border-radius: 2px;
+  background: rgba(196, 77, 255, 0.35);
+  color: #f0c8ff;
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.detected-keys .key-chip-code {
+  color: var(--amber);
+  font-weight: 600;
 }
 
 /* ===== FAQ / Threats ===== */

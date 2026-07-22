@@ -57,7 +57,7 @@ const WEBSITES = [
   { name: "Overnight Success", status: "timed", deepWiki: 2, time: { start: 15, end: 29 } },
 
   // —— Time-limited :30–:44 (Deep Wiki 3) ——
-  { name: "Bizzare Propagation", status: "timed", deepWiki: 3, time: { start: 30, end: 44 } },
+  { name: "Bizarre Propagation", status: "timed", deepWiki: 3, time: { start: 30, end: 44 } },
   { name: "Crystal Guild", status: "timed", deepWiki: 3, time: { start: 30, end: 44 } },
   { name: "I Am Here", status: "timed", deepWiki: 3, time: { start: 30, end: 44 } },
   { name: "Keep Sake", status: "timed", deepWiki: 3, time: { start: 30, end: 44 } },
@@ -238,7 +238,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notatki, kody, klucze…\nKlucze (np. A1B2C3D4E5F6) zostaną podświetlone.",
+      "Notatki, kody, klucze…\nnp. 4 - cb4f1f4c\nKlucze w formacie numer - kod zostaną podświetlone.",
     emptyTab: "Deep Wiki {n}: wklej listę stron i kliknij „Przeanalizuj strony”.",
     unknownSection: "Inne / Nieznane",
     colSite: "Strona",
@@ -248,12 +248,15 @@ const I18N = {
     flagVisited: "Odwiedzono",
     flagReviewed: "Przejrzano dokładnie",
     flagKey: "Znaleziono klucz",
+    flagKeyFinder: "Sprawdzono z key finderem",
     activeNow: "Aktywna teraz",
     timeAlways: "Zawsze (24/7)",
     timeHourly: "co godz. :{start} – :{end}",
     matchSummary: "DW{n}: {matched}/{total}",
     unknownCount: " · nieznane: {n}",
     detectedKeys: "Wykryte klucze:",
+    copyKeyHint: "Kliknij, aby skopiować",
+    copyKeyDone: "Skopiowano!",
     status_always: "Zawsze",
     status_timed: "Czasowa",
     status_careful: "Ostrożnie",
@@ -274,10 +277,10 @@ const I18N = {
     help: [
       ["Zakładki:", "najpierw Deep Wiki 1 — wklej listę i przeanalizuj. Potem przełącz na DW2 / DW3 i wklej osobno."],
       ["Format:", "Nazwa - opis — liczy się tylko tekst przed myślnikiem."],
-      ["Checkboxy:", "Odwiedzono / Przejrzano / Klucz — zapis lokalny w przeglądarce."],
+      ["Checkboxy:", "Odwiedzono / Przejrzano / Klucz / Key finder — zapis lokalny w przeglądarce."],
       ["Okna czasowe:", "strony timed działają w podanych minutach każdej godziny (np. :00–:14)."],
       ["Koparki:", "wybieraj najwyższe DOS/min w odblokowanym tierze VM Grid."],
-      ["Notatnik:", "ciągi 8–20 znaków alfanumerycznych są wykrywane jako klucze."],
+      ["Notatnik:", "klucze w formacie „4 - cb4f1f4c” (numer + kod) są wykrywane i numerowane."],
       ["Język:", "przełącznik PL / EN w prawym górnym rogu."],
     ],
     faq: [
@@ -398,7 +401,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notes, codes, keys…\nKeys (e.g. A1B2C3D4E5F6) will be highlighted.",
+      "Notes, codes, keys…\ne.g. 4 - cb4f1f4c\nKeys in number - code format will be highlighted.",
     emptyTab: "Deep Wiki {n}: paste a site list and click “Analyze sites”.",
     unknownSection: "Other / Unknown",
     colSite: "Site",
@@ -408,12 +411,15 @@ const I18N = {
     flagVisited: "Visited",
     flagReviewed: "Fully reviewed",
     flagKey: "Key found",
+    flagKeyFinder: "Checked with key finder",
     activeNow: "Active now",
     timeAlways: "Always (24/7)",
     timeHourly: "hourly :{start} – :{end}",
     matchSummary: "DW{n}: {matched}/{total}",
     unknownCount: " · unknown: {n}",
     detectedKeys: "Detected keys:",
+    copyKeyHint: "Click to copy",
+    copyKeyDone: "Copied!",
     status_always: "Always",
     status_timed: "Timed",
     status_careful: "Careful",
@@ -434,10 +440,10 @@ const I18N = {
     help: [
       ["Tabs:", "start with Deep Wiki 1 — paste and analyze. Then switch to DW2 / DW3 and paste separately."],
       ["Format:", "Name - description — only the text before the dash counts."],
-      ["Checkboxes:", "Visited / Reviewed / Key — saved locally in the browser."],
+      ["Checkboxes:", "Visited / Reviewed / Key / Key finder — saved locally in the browser."],
       ["Time windows:", "timed sites are up during those minutes of every hour (e.g. :00–:14)."],
       ["Miners:", "pick the highest DOS/min in your unlocked VM Grid tier."],
-      ["Notebook:", "8–20 character alphanumeric strings are detected as keys."],
+      ["Notebook:", "keys like “4 - cb4f1f4c” (number + code) are detected and numbered."],
       ["Language:", "PL / EN switch in the top-right corner."],
     ],
     faq: [
@@ -529,9 +535,10 @@ function statusLabel(status) {
   return t(`status_${status}`) || status;
 }
 
-/** Potential in-game keys: 8–20 alphanumeric (optionally with - _) */
-const KEY_REGEX = /\b[A-Za-z0-9][A-Za-z0-9_-]{7,19}\b/g;
-const KEY_TEST = /^[A-Za-z0-9][A-Za-z0-9_-]{7,19}$/;
+/** Game keys: "4 - cb4f1f4c" or bare codes */
+const NUMBERED_KEY_REGEX = /(\d{1,3})\s*([-–—:.])\s*([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
+const BARE_KEY_REGEX = /\b([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
+const KEY_TEST = /^[A-Za-z0-9][A-Za-z0-9_-]{5,19}$/;
 
 /** Per-tab state: { 1: { input, matchedNames, unknown }, … } */
 let activeWiki = 1;
@@ -565,6 +572,8 @@ const SITE_INDEX = (() => {
   }
   map.set(normalizeName("Eat My ****"), WEBSITES.find((s) => s.name.startsWith("Eat My")));
   map.set(normalizeName("Eat My Shit"), WEBSITES.find((s) => s.name.startsWith("Eat My")));
+  // typo variant from older charts
+  map.set(normalizeName("Bizzare Propagation"), WEBSITES.find((s) => s.name === "Bizarre Propagation"));
   return map;
 })();
 
@@ -609,6 +618,9 @@ function svgIcon(type) {
   if (type === "reviewed") {
     return `<svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>`;
   }
+  if (type === "keyfinder") {
+    return `<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M8 11h6M11 8v6"/></svg>`;
+  }
   return `<svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`;
 }
 
@@ -652,15 +664,6 @@ function matchSites(names) {
   }
 
   return { matched, unknown };
-}
-
-function sortSites(sites) {
-  return [...sites].sort((a, b) => {
-    const aAct = isCurrentlyActive(a) ? 0 : 1;
-    const bAct = isCurrentlyActive(b) ? 0 : 1;
-    if (aAct !== bAct) return aAct - bAct;
-    return a.name.localeCompare(b.name);
-  });
 }
 
 function loadWikiTabs() {
@@ -715,6 +718,7 @@ function renderCheckButtons(siteName, flags) {
     { flag: "visited", title: t("flagVisited"), icon: "visited" },
     { flag: "reviewed", title: t("flagReviewed"), icon: "reviewed" },
     { flag: "key", title: t("flagKey"), icon: "key" },
+    { flag: "keyfinder", title: t("flagKeyFinder"), icon: "keyfinder" },
   ];
 
   return defs
@@ -763,7 +767,7 @@ function renderCurrentTab() {
   const flags = loadFlags();
   const container = document.getElementById("tracker-results");
   const tab = wikiTabs[activeWiki];
-  const matched = sortSites(tab.matched);
+  const matched = tab.matched;
   const unknown = tab.unknown.map((name) => ({
     name,
     status: "unknown",
@@ -1064,35 +1068,155 @@ function looksLikeKey(token) {
   const hasUpper = /[A-Z]/.test(token);
   const hasLower = /[a-z]/.test(token);
   if (hasDigit) return true;
-  if (hasUpper && hasLower && token.length >= 10) return true;
+  if (hasUpper && hasLower && token.length >= 8) return true;
+  if (/^[A-F0-9_-]{6,}$/i.test(token)) return true;
   if (/^[A-Z0-9_-]{8,}$/.test(token)) return true;
   return false;
 }
 
-function extractKeys(text) {
-  const found = new Set();
-  const re = new RegExp(KEY_REGEX.source, "g");
+/**
+ * Find keys in text. Prefer "N - code" form; also bare codes.
+ * Returns [{ index, length, num, code, raw }] sorted by index.
+ */
+function findKeyMatches(text) {
+  const matches = [];
+  const covered = new Set();
+
+  const numbered = new RegExp(NUMBERED_KEY_REGEX.source, "g");
   let m;
-  while ((m = re.exec(text)) !== null) {
-    if (looksLikeKey(m[0])) found.add(m[0]);
+  while ((m = numbered.exec(text)) !== null) {
+    const code = m[3];
+    if (!looksLikeKey(code)) continue;
+    const start = m.index;
+    const end = m.index + m[0].length;
+    for (let i = start; i < end; i++) covered.add(i);
+    matches.push({
+      index: start,
+      length: m[0].length,
+      num: m[1],
+      sep: m[2],
+      code,
+      raw: m[0],
+    });
   }
-  return [...found];
+
+  const bare = new RegExp(BARE_KEY_REGEX.source, "g");
+  while ((m = bare.exec(text)) !== null) {
+    const code = m[1];
+    if (!looksLikeKey(code)) continue;
+    // skip if overlapping a numbered match
+    let overlap = false;
+    for (let i = m.index; i < m.index + m[0].length; i++) {
+      if (covered.has(i)) {
+        overlap = true;
+        break;
+      }
+    }
+    if (overlap) continue;
+    matches.push({
+      index: m.index,
+      length: m[0].length,
+      num: null,
+      sep: null,
+      code,
+      raw: m[0],
+    });
+  }
+
+  matches.sort((a, b) => a.index - b.index);
+  return matches;
+}
+
+function extractKeys(text) {
+  const seen = new Set();
+  const keys = [];
+  for (const match of findKeyMatches(text)) {
+    const id = match.num ? `${match.num}:${match.code}` : match.code;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    keys.push(match);
+  }
+  // Prefer numbered keys first in the chip list, then by number
+  keys.sort((a, b) => {
+    if (a.num && b.num) return Number(a.num) - Number(b.num);
+    if (a.num && !b.num) return -1;
+    if (!a.num && b.num) return 1;
+    return a.code.localeCompare(b.code);
+  });
+  return keys;
+}
+
+function formatKeyMark(match) {
+  if (match.num) {
+    return `<mark class="key-mark key-mark-numbered"><span class="key-num">#${escapeHtml(match.num)}</span><span class="key-sep"> — </span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
+  }
+  return `<mark class="key-mark"><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
+}
+
+function formatKeyChip(match) {
+  const copyValue = match.num ? `${match.num} - ${match.code}` : match.code;
+  const label = match.num
+    ? `<span class="key-chip-num">#${escapeHtml(match.num)}</span><span class="key-chip-code">${escapeHtml(match.code)}</span>`
+    : `<span class="key-chip-code">${escapeHtml(match.code)}</span>`;
+  const numberedClass = match.num ? " key-chip-numbered" : "";
+
+  return `<button type="button" class="key-chip${numberedClass}" data-copy="${escapeHtml(copyValue)}" title="${escapeHtml(t("copyKeyHint"))}">${label}</button>`;
+}
+
+function copyKeyToClipboard(value, btn) {
+  const done = () => {
+    btn.classList.add("copied");
+    const prev = btn.getAttribute("title");
+    btn.setAttribute("title", t("copyKeyDone"));
+    setTimeout(() => {
+      btn.classList.remove("copied");
+      if (prev) btn.setAttribute("title", prev);
+    }, 1200);
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(value).then(done).catch(() => {
+      fallbackCopy(value);
+      done();
+    });
+  } else {
+    fallbackCopy(value);
+    done();
+  }
+}
+
+function fallbackCopy(value) {
+  const ta = document.createElement("textarea");
+  ta.value = value;
+  ta.setAttribute("readonly", "");
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+  } catch {
+    /* ignore */
+  }
+  document.body.removeChild(ta);
 }
 
 function highlightNotes(text) {
-  const re = new RegExp(KEY_REGEX.source, "g");
+  const matches = findKeyMatches(text);
   let result = "";
   let last = 0;
-  let m;
-  while ((m = re.exec(text)) !== null) {
-    result += escapeHtml(text.slice(last, m.index));
-    if (looksLikeKey(m[0])) {
-      result += `<mark class="key-mark">${escapeHtml(m[0])}</mark>`;
+
+  for (const match of matches) {
+    result += escapeHtml(text.slice(last, match.index));
+    if (match.num) {
+      const sep = match.raw.slice(match.num.length, match.raw.length - match.code.length);
+      result += `<mark class="key-mark key-mark-numbered"><span class="key-num">${escapeHtml(match.num)}</span><span class="key-sep">${escapeHtml(sep)}</span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
     } else {
-      result += escapeHtml(m[0]);
+      result += `<mark class="key-mark"><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
     }
-    last = m.index + m[0].length;
+    last = match.index + match.length;
   }
+
   result += escapeHtml(text.slice(last));
   if (text.endsWith("\n")) result += "\n";
   return result || " ";
@@ -1113,8 +1237,7 @@ function syncNotebook() {
   if (keys.length) {
     keysEl.classList.add("has-keys");
     keysEl.innerHTML =
-      `${escapeHtml(t("detectedKeys"))} ` +
-      keys.map((k) => `<span class="key-chip">${escapeHtml(k)}</span>`).join("");
+      `${escapeHtml(t("detectedKeys"))} ` + keys.map(formatKeyChip).join("");
   } else {
     keysEl.classList.remove("has-keys");
     keysEl.textContent = "";
@@ -1217,6 +1340,12 @@ function init() {
     const highlight = document.getElementById("notebook-highlight");
     highlight.scrollTop = notebook.scrollTop;
     highlight.scrollLeft = notebook.scrollLeft;
+  });
+
+  document.getElementById("detected-keys").addEventListener("click", (e) => {
+    const btn = e.target.closest(".key-chip[data-copy]");
+    if (!btn) return;
+    copyKeyToClipboard(btn.dataset.copy, btn);
   });
 
   setInterval(() => {
