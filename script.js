@@ -238,7 +238,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — wklej listę ze gry, np.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notatki, kody, klucze…\nnp. 4 - cb4f1f4c\nWykrywane tylko: cyfra + myślnik + kod.",
+      "Notatki, kody, klucze…\n4 - cb4f1f4c  (zaszyfrowany)\n4 - 9f09      (zdekryptowany → montaż)",
     emptyTab: "Deep Wiki {n}: wklej listę stron i kliknij „Przeanalizuj strony”.",
     unknownSection: "Inne / Nieznane",
     colSite: "Strona",
@@ -257,6 +257,12 @@ const I18N = {
     detectedKeys: "Wykryte klucze:",
     copyKeyHint: "Kliknij, aby skopiować",
     copyKeyDone: "Skopiowano!",
+    assemblyTitle: "Montaż zdekryptowanych (1–8)",
+    assemblyCount: "{n}/8",
+    assemblyEmpty: "—",
+    assemblyCopy: "Kopiuj finalny klucz",
+    assemblyIncomplete: "Zbierz wszystkie 8 zdekryptowanych kodów",
+    assemblyCopied: "Skopiowano finalny klucz!",
     status_always: "Zawsze",
     status_timed: "Czasowa",
     status_careful: "Ostrożnie",
@@ -275,13 +281,18 @@ const I18N = {
     spoilerAccept: "Pokaż spoiler",
     spoilerHide: "Ukryj ponownie",
     help: [
-      ["Zakładki:", "najpierw Deep Wiki 1 — wklej listę i przeanalizuj. Potem przełącz na DW2 / DW3 i wklej osobno."],
-      ["Format:", "Nazwa - opis — liczy się tylko tekst przed myślnikiem."],
-      ["Checkboxy:", "Odwiedzono / Przejrzano / Klucz / Key finder — zapis lokalny w przeglądarce."],
-      ["Okna czasowe:", "strony timed działają w podanych minutach każdej godziny (np. :00–:14)."],
-      ["Koparki:", "wybieraj najwyższe DOS/min w odblokowanym tierze VM Grid."],
-      ["Notatnik:", "klucze tylko w formacie „4 - cb4f1f4c” (cyfra, myślnik, kod)."],
-      ["Język:", "przełącznik PL / EN w prawym górnym rogu."],
+      ["Tracker / zakładki:", "Deep Wiki 1, 2 i 3 to osobne zakładki. Wklej listę ze swojej wiki, kliknij „Przeanalizuj strony”, potem przełącz na kolejną DW i wklej osobno."],
+      ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
+      ["Postęp:", "przy każdej stronie: Odwiedzono / Przejrzano / Znaleziono klucz / Sprawdzono z key finderem — zapis lokalny w przeglądarce."],
+      ["Okna czasowe:", "strony timed działają w podanych minutach każdej godziny (np. :00–:14). Zielona kropka = aktywna teraz."],
+      ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
+      ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
+      ["Montaż 1–8:", "zdekryptowane kody wpadają w sloty #1–#8 według numeru (kolejność wklejenia dowolna). Cel: zebrać wszystkie 8."],
+      ["Kopiowanie:", "kliknij chip klucza, żeby skopiować „N - kod”. Przy 8/8 użyj „Kopiuj finalny klucz” — skleja same kody w kolejności 1→8."],
+      ["Sensory:", "zakładka z setupem 3 motion sensorów + jak odróżnić Tannera od Lucasa po długości bipania."],
+      ["Zagrożenia:", "tabela cue/obrona. Jeden wpis jest pod spoilerem — odsłania się dopiero po akceptacji."],
+      ["FAQ:", "krótkie pytania o hazard, meth, Bomb Maker, source code i pauzę przy komputerze."],
+      ["Język i zapis:", "PL/EN w prawym górnym rogu. Notatki, postęp i listy DW zapisują się lokalnie (zostają po zamknięciu przeglądarki)."],
     ],
     faq: [
       {
@@ -401,7 +412,7 @@ const I18N = {
     sitePlaceholder:
       "Deep Wiki {n} — paste list from the game, e.g.\nChevron - Leaked military mission logs.\nFindLove - You don't have to be alone.",
     notebookPlaceholder:
-      "Notes, codes, keys…\ne.g. 4 - cb4f1f4c\nOnly digit + dash + code is detected.",
+      "Notes, codes, keys…\n4 - cb4f1f4c  (encrypted)\n4 - 9f09      (decrypted → assembly)",
     emptyTab: "Deep Wiki {n}: paste a site list and click “Analyze sites”.",
     unknownSection: "Other / Unknown",
     colSite: "Site",
@@ -420,6 +431,12 @@ const I18N = {
     detectedKeys: "Detected keys:",
     copyKeyHint: "Click to copy",
     copyKeyDone: "Copied!",
+    assemblyTitle: "Decrypted assembly (1–8)",
+    assemblyCount: "{n}/8",
+    assemblyEmpty: "—",
+    assemblyCopy: "Copy final key",
+    assemblyIncomplete: "Collect all 8 decrypted codes",
+    assemblyCopied: "Final key copied!",
     status_always: "Always",
     status_timed: "Timed",
     status_careful: "Careful",
@@ -438,13 +455,18 @@ const I18N = {
     spoilerAccept: "Reveal spoiler",
     spoilerHide: "Hide again",
     help: [
-      ["Tabs:", "start with Deep Wiki 1 — paste and analyze. Then switch to DW2 / DW3 and paste separately."],
-      ["Format:", "Name - description — only the text before the dash counts."],
-      ["Checkboxes:", "Visited / Reviewed / Key / Key finder — saved locally in the browser."],
-      ["Time windows:", "timed sites are up during those minutes of every hour (e.g. :00–:14)."],
-      ["Miners:", "pick the highest DOS/min in your unlocked VM Grid tier."],
-      ["Notebook:", "keys only in “4 - cb4f1f4c” format (digit, dash, code)."],
-      ["Language:", "PL / EN switch in the top-right corner."],
+      ["Tracker / tabs:", "Deep Wiki 1, 2 and 3 are separate tabs. Paste your wiki list, click “Analyze sites”, then switch DW and paste the next list."],
+      ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
+      ["Progress:", "per site: Visited / Reviewed / Key found / Checked with key finder — saved locally in the browser."],
+      ["Time windows:", "timed sites are up during those minutes of every hour (e.g. :00–:14). Green dot = active right now."],
+      ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
+      ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
+      ["Assembly 1–8:", "decrypted codes fill slots #1–#8 by number (paste order does not matter). Goal: collect all 8."],
+      ["Copying:", "click a key chip to copy “N - code”. At 8/8 use “Copy final key” — concatenates codes only in order 1→8."],
+      ["Sensors:", "tab with the 3 motion-sensor setup + how to tell Tanner from Lucas by beep length."],
+      ["Threats:", "cue/counter table. One entry is behind a spoiler — revealed only after you accept."],
+      ["FAQ:", "short tips on gambling, meth, Bomb Maker, source code, and pausing at the computer."],
+      ["Language & save:", "PL/EN in the top-right. Notes, progress and DW lists persist locally (survive browser restart)."],
     ],
     faq: [
       {
@@ -535,8 +557,9 @@ function statusLabel(status) {
   return t(`status_${status}`) || status;
 }
 
-/** Game keys only: "4 - cb4f1f4c" (number + separator + code) */
-const NUMBERED_KEY_REGEX = /(\d{1,3})\s*([-–—])\s*([A-Za-z0-9][A-Za-z0-9_-]{5,19})\b/g;
+/** Game keys: "N - code" — short code = decrypted, long = encrypted */
+const NUMBERED_KEY_REGEX = /(\d{1,3})\s*([-–—])\s*([A-Za-z0-9][A-Za-z0-9_-]{2,19})\b/g;
+const DECRYPTED_CODE_MAX_LEN = 5;
 
 /** Per-tab state: { 1: { input, matchedNames, unknown }, … } */
 let activeWiki = 1;
@@ -1061,17 +1084,24 @@ function setLanguage(next) {
    ========================================================================== */
 
 function looksLikeKeyCode(token) {
-  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{5,19}$/.test(token)) return false;
-  // Prefer hex-ish / mixed codes; reject short all-letter labels
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{2,19}$/.test(token)) return false;
+  // Short decrypted codes (e.g. 9f09)
+  if (token.length <= DECRYPTED_CODE_MAX_LEN) {
+    return /^[A-Za-z0-9_-]+$/.test(token);
+  }
   if (/\d/.test(token)) return true;
   if (/^[A-Fa-f0-9_-]{6,}$/.test(token)) return true;
   if (/[A-Z]/.test(token) && /[a-z]/.test(token) && token.length >= 8) return true;
   return false;
 }
 
+function keyKind(code) {
+  return code.length <= DECRYPTED_CODE_MAX_LEN ? "decrypted" : "encrypted";
+}
+
 /**
- * Keys only in form: "N - code" (digit(s), dash, then code).
- * Returns [{ index, length, num, code, raw }] sorted by index.
+ * Keys in form: "N - code".
+ * Returns [{ index, length, num, code, raw, kind }] in text order.
  */
 function findKeyMatches(text) {
   const matches = [];
@@ -1087,6 +1117,7 @@ function findKeyMatches(text) {
       sep: m[2],
       code,
       raw: m[0],
+      kind: keyKind(code),
     });
   }
   return matches;
@@ -1096,19 +1127,80 @@ function extractKeys(text) {
   const seen = new Set();
   const keys = [];
   for (const match of findKeyMatches(text)) {
-    const id = `${match.num}:${match.code}`;
+    const id = `${match.kind}:${match.num}:${match.code}`;
     if (seen.has(id)) continue;
     seen.add(id);
     keys.push(match);
   }
-  keys.sort((a, b) => Number(a.num) - Number(b.num));
+  keys.sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === "decrypted" ? -1 : 1;
+    return Number(a.num) - Number(b.num);
+  });
   return keys;
+}
+
+/** Slots 1–8 from decrypted keys; last occurrence in text wins. */
+function buildDecryptedSlots(text) {
+  const slots = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
+  for (const match of findKeyMatches(text)) {
+    if (match.kind !== "decrypted") continue;
+    const n = Number(match.num);
+    if (n >= 1 && n <= 8) slots[n] = match.code;
+  }
+  return slots;
+}
+
+function assemblyFinalKey(slots) {
+  const parts = [];
+  for (let i = 1; i <= 8; i++) {
+    if (!slots[i]) return null;
+    parts.push(slots[i]);
+  }
+  return parts.join("");
 }
 
 function formatKeyChip(match) {
   const copyValue = `${match.num} - ${match.code}`;
-  const label = `<span class="key-chip-num">#${escapeHtml(match.num)}</span><span class="key-chip-code">${escapeHtml(match.code)}</span>`;
-  return `<button type="button" class="key-chip key-chip-numbered" data-copy="${escapeHtml(copyValue)}" title="${escapeHtml(t("copyKeyHint"))}">${label}</button>`;
+  const kindClass = match.kind === "decrypted" ? "key-chip-decrypted" : "key-chip-encrypted";
+  const kindBadge =
+    match.kind === "decrypted"
+      ? `<span class="key-chip-kind">OK</span>`
+      : "";
+  const label = `<span class="key-chip-num">#${escapeHtml(match.num)}</span>${kindBadge}<span class="key-chip-code">${escapeHtml(match.code)}</span>`;
+  return `<button type="button" class="key-chip key-chip-numbered ${kindClass}" data-copy="${escapeHtml(copyValue)}" title="${escapeHtml(t("copyKeyHint"))}">${label}</button>`;
+}
+
+function renderKeyAssembly(text) {
+  const el = document.getElementById("key-assembly");
+  if (!el) return;
+
+  const slots = buildDecryptedSlots(text);
+  let filled = 0;
+  const cells = [];
+  for (let i = 1; i <= 8; i++) {
+    const code = slots[i];
+    if (code) filled += 1;
+    cells.push(
+      code
+        ? `<div class="assembly-slot filled" title="#${i}"><span class="assembly-slot-num">#${i}</span><span class="assembly-slot-code">${escapeHtml(code)}</span></div>`
+        : `<div class="assembly-slot empty" title="#${i}"><span class="assembly-slot-num">#${i}</span><span class="assembly-slot-code">${escapeHtml(t("assemblyEmpty"))}</span></div>`
+    );
+  }
+
+  const finalKey = assemblyFinalKey(slots);
+  const complete = !!finalKey;
+  const copyBtn = complete
+    ? `<button type="button" class="btn btn-primary assembly-copy-btn" data-copy-final="${escapeHtml(finalKey)}" title="${escapeHtml(t("assemblyCopy"))}">${escapeHtml(t("assemblyCopy"))}</button>`
+    : `<button type="button" class="btn btn-ghost assembly-copy-btn" disabled title="${escapeHtml(t("assemblyIncomplete"))}">${escapeHtml(t("assemblyCopy"))}</button>`;
+
+  el.innerHTML = `
+    <div class="assembly-head">
+      <span class="assembly-title">${escapeHtml(t("assemblyTitle"))}</span>
+      <span class="assembly-count">${escapeHtml(t("assemblyCount", { n: filled }))}</span>
+    </div>
+    <div class="assembly-slots">${cells.join("")}</div>
+    <div class="assembly-actions">${copyBtn}</div>
+  `;
 }
 
 function copyKeyToClipboard(value, btn) {
@@ -1157,7 +1249,8 @@ function highlightNotes(text) {
   for (const match of matches) {
     result += escapeHtml(text.slice(last, match.index));
     const sep = match.raw.slice(match.num.length, match.raw.length - match.code.length);
-    result += `<mark class="key-mark key-mark-numbered"><span class="key-num">${escapeHtml(match.num)}</span><span class="key-sep">${escapeHtml(sep)}</span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
+    const kindClass = match.kind === "decrypted" ? "key-mark-decrypted" : "key-mark-encrypted";
+    result += `<mark class="key-mark key-mark-numbered ${kindClass}"><span class="key-num">${escapeHtml(match.num)}</span><span class="key-sep">${escapeHtml(sep)}</span><span class="key-code">${escapeHtml(match.code)}</span></mark>`;
     last = match.index + match.length;
   }
 
@@ -1181,12 +1274,14 @@ function syncNotebook() {
   if (keys.length) {
     keysEl.classList.add("has-keys");
     keysEl.innerHTML =
-      `${escapeHtml(t("detectedKeys"))} ` + keys.map(formatKeyChip).join("");
+      `<span class="detected-keys-label">${escapeHtml(t("detectedKeys"))}</span> ` +
+      keys.map(formatKeyChip).join("");
   } else {
     keysEl.classList.remove("has-keys");
     keysEl.textContent = "";
   }
 
+  renderKeyAssembly(text);
   localStorage.setItem(STORAGE_NOTES, text);
 }
 
@@ -1290,6 +1385,13 @@ function init() {
     const btn = e.target.closest(".key-chip[data-copy]");
     if (!btn) return;
     copyKeyToClipboard(btn.dataset.copy, btn);
+  });
+
+  document.getElementById("key-assembly").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-copy-final]");
+    if (!btn || btn.disabled) return;
+    copyKeyToClipboard(btn.dataset.copyFinal, btn);
+    btn.setAttribute("title", t("assemblyCopied"));
   });
 
   setInterval(() => {

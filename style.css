@@ -667,6 +667,20 @@ body {
   padding: 0 3px;
 }
 
+.notebook-highlight mark.key-mark-decrypted {
+  background: rgba(51, 255, 153, 0.18);
+  box-shadow: 0 0 0 1px rgba(51, 255, 153, 0.4);
+}
+
+.notebook-highlight mark.key-mark-decrypted .key-num {
+  color: var(--green);
+}
+
+.notebook-highlight mark.key-mark-encrypted {
+  background: rgba(196, 77, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(196, 77, 255, 0.4);
+}
+
 .notebook-highlight .key-num {
   color: var(--magenta);
   font-weight: 700;
@@ -764,6 +778,148 @@ body {
 .detected-keys .key-chip-code {
   color: var(--amber);
   font-weight: 600;
+}
+
+.detected-keys .key-chip-decrypted {
+  border-color: var(--green-dim);
+  background: rgba(51, 255, 153, 0.1);
+}
+
+.detected-keys .key-chip-decrypted:hover {
+  border-color: var(--green);
+  background: rgba(51, 255, 153, 0.2);
+  box-shadow: var(--glow-green);
+}
+
+.detected-keys .key-chip-decrypted .key-chip-num {
+  background: rgba(51, 255, 153, 0.35);
+  color: var(--green);
+}
+
+.detected-keys .key-chip-kind {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--green);
+  border: 1px solid var(--green-dim);
+  border-radius: 2px;
+  padding: 0 3px;
+}
+
+.detected-keys-label {
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+/* ===== Key assembly (decrypted 1–8) ===== */
+
+.key-assembly {
+  flex-shrink: 0;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.assembly-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.assembly-title {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cyan);
+}
+
+.assembly-count {
+  font-size: 0.72rem;
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+
+.assembly-slots {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.assembly-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 2px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--bg-input);
+  min-width: 0;
+}
+
+.assembly-slot.empty {
+  opacity: 0.45;
+}
+
+.assembly-slot.filled {
+  border-color: var(--green-dim);
+  background: rgba(51, 255, 153, 0.08);
+}
+
+.assembly-slot-num {
+  font-size: 0.58rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.assembly-slot.filled .assembly-slot-num {
+  color: var(--green);
+}
+
+.assembly-slot-code {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  letter-spacing: 0.02em;
+}
+
+.assembly-slot.filled .assembly-slot-code {
+  color: var(--amber);
+}
+
+.assembly-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.assembly-copy-btn {
+  padding: 5px 10px;
+  font-size: 0.68rem;
+}
+
+.assembly-copy-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.assembly-copy-btn.copied {
+  border-color: var(--green-dim);
+  color: var(--green);
+  background: rgba(51, 255, 153, 0.18);
+}
+
+@media (max-width: 960px) {
+  .assembly-slots {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 /* ===== FAQ / Threats ===== */
