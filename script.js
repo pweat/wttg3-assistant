@@ -1739,12 +1739,15 @@ function applyLayout() {
   const root = document.documentElement;
   if (layout.minersH) root.style.setProperty("--miners-h", `${layout.minersH}%`);
   if (layout.faqH) root.style.setProperty("--faq-h", `${layout.faqH}px`);
+  if (layout.priorityH) root.style.setProperty("--priority-h", `${layout.priorityH}px`);
 }
 
 function initResizeHandles() {
   const sidebar = document.querySelector(".sidebar");
   const sidebarHandle = document.getElementById("resize-sidebar");
   const faqHandle = document.getElementById("resize-faq");
+  const priorityHandle = document.getElementById("resize-priority");
+  const tracker = document.querySelector(".tracker");
   const grid = document.querySelector(".grid");
 
   function startDrag(onMove) {
@@ -1788,6 +1791,21 @@ function initResizeHandles() {
       });
     });
   }
+
+  if (priorityHandle && tracker) {
+    priorityHandle.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      const rect = tracker.getBoundingClientRect();
+      startDrag((clientY) => {
+        const h = rect.bottom - clientY;
+        const clamped = Math.min(rect.height * 0.75, Math.max(140, h));
+        document.documentElement.style.setProperty("--priority-h", `${clamped}px`);
+        const layout = loadLayout();
+        layout.priorityH = Math.round(clamped);
+        saveLayout(layout);
+      });
+    });
+  }
 }
 
 function factoryReset() {
@@ -1814,6 +1832,7 @@ function factoryReset() {
 
   document.documentElement.style.removeProperty("--miners-h");
   document.documentElement.style.removeProperty("--faq-h");
+  document.documentElement.style.removeProperty("--priority-h");
 
   const siteInput = document.getElementById("site-input");
   const notebook = document.getElementById("notebook-input");

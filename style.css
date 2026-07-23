@@ -698,13 +698,21 @@ body.is-resizing textarea {
 
 .priority-board {
   flex: 0 0 auto;
-  max-height: min(38vh, 340px);
+  height: var(--priority-h, min(52vh, 480px));
+  max-height: calc(100% - 180px);
+  min-height: 160px;
   overflow-y: auto;
-  border-top: 1px solid var(--border);
+  border-top: none;
   padding: 8px 10px 10px;
   background: rgba(0, 0, 0, 0.22);
   scrollbar-width: thin;
   scrollbar-color: var(--green-dim) var(--bg-input);
+}
+
+#resize-priority {
+  flex-shrink: 0;
+  margin: 0;
+  border-top: 1px solid var(--border);
 }
 
 .priority-board-head {
