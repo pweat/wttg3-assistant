@@ -129,6 +129,48 @@ const WEBSITES = [
   { name: "Roses Destruction", status: "fbi", deepWiki: 3, time: null },
 ];
 
+/* Priority board (uptime importance chart) — names match WEBSITES */
+const SITE_PRIORITY = {
+  max: {
+    "00-14": ["FindLove", "Forsaken Gifts", "Mors N More Market", "Order Of Nine", "The Prey"],
+    "15-29": ["Building A Future", "Eat My ♥♥♥♥", "Overnight Success"],
+    "30-44": ["Bizarre Propagation", "Crystal Guild", "I Am Here", "Keep Sake", "Shelter", "You There?"],
+    "45-59": ["The Hall"],
+  },
+  medium: {
+    "00-29": ["Blackhat Post", "Drug Tickets", "Kill For Me", "MamaBruguglio", "Red Handed", "ViaMarisRoute"],
+    "30-59": ["Chevron", "finalStanding", "Lab Monkey", "The Grey"],
+  },
+  low: [
+    "Blushing Brides",
+    "Cavity Lease",
+    "Crisis Calls",
+    "Doctor Murder",
+    "Dont Waste It",
+    "Doughy",
+    "Encrave",
+    "Forever Friend",
+    "Jakobs Sink",
+    "LostTapes",
+    "Oneless",
+    "Prohibited Stockpile",
+    "Red Triangle",
+    "Ring Ring",
+    "Symphoros Chosen",
+    "Synapse Decay",
+    "Tango Down",
+    "Thanks For Visiting!",
+    "The Bomb Maker",
+    "The Hole",
+    "The Light Within",
+    "The Loogaroo",
+    "Time Sharing",
+    "TRACK06",
+    "VoluVision",
+    "World Wide Workers",
+  ],
+};
+
 const MINERS = {
   tier1: {
     label: "Tier I",
@@ -308,10 +350,16 @@ const I18N = {
     gallerySiteNote: "Notatka",
     galleryNoImages: "Brak screenshotów — tylko notatka.",
     galleryOpenHint: "Kliknij, aby zobaczyć screenshoty",
+    priorityTitle: "Priorytet stron",
+    priorityMax: "Max (25% / h)",
+    priorityMedium: "Medium (50% / h)",
+    priorityLow: "Low (zawsze / 100%)",
+    priorityHitHint: "Masz tę stronę na liście",
     help: [
       ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
-      ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
+      ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Do przejrzenia = mocniej podświetlone. Odw. = przyciemnione. Klucz = prawie wygaszone."],
+      ["Priorytety:", "tablica pod listą — Max / Medium / Low. Wykryte na bieżącej zakładce podświetlają się. Kliknij nazwę = galeria."],
       ["Screenshoty:", "kliknij nazwę strony (ikona aparatu). U góry galerii wybierasz podstronę. Strzałki / ← → przełączają screeny, Esc zamyka."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
@@ -501,10 +549,16 @@ const I18N = {
     gallerySiteNote: "Note",
     galleryNoImages: "No screenshots — note only.",
     galleryOpenHint: "Click to view screenshots",
+    priorityTitle: "Site priority",
+    priorityMax: "Max (25% / h)",
+    priorityMedium: "Medium (50% / h)",
+    priorityLow: "Low (always / 100%)",
+    priorityHitHint: "This site is on your list",
     help: [
       ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
-      ["Progress:", "4 columns: Vis. / Key / KF / File. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
+      ["Progress:", "4 columns: Vis. / Key / KF / File. To-do rows are highlighted. Visited = dimmed. Key found = nearly extinguished."],
+      ["Priorities:", "board under the list — Max / Medium / Low. Sites on the current tab light up. Click a name to open the gallery."],
       ["Screenshots:", "click a site name (camera icon). Use the page tabs at the top to jump between subpages. Arrow keys switch images, Esc closes."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
@@ -630,6 +684,24 @@ function normalizeName(str) {
     .replace(/[''`]/g, "")
     .replace(/\s+/g, " ")
     .replace(/[♥❤]+/g, "♥");
+}
+
+const PRIORITY_LOOKUP = (() => {
+  const map = new Map();
+  for (const names of Object.values(SITE_PRIORITY.max)) {
+    for (const name of names) map.set(normalizeName(name), "max");
+  }
+  for (const names of Object.values(SITE_PRIORITY.medium)) {
+    for (const name of names) map.set(normalizeName(name), "medium");
+  }
+  for (const name of SITE_PRIORITY.low) {
+    map.set(normalizeName(name), "low");
+  }
+  return map;
+})();
+
+function getSitePriorityTier(siteName) {
+  return PRIORITY_LOOKUP.get(normalizeName(siteName)) || null;
 }
 
 /** Fuzzy-friendly lookup map */
@@ -793,11 +865,6 @@ function renderCheckCell(siteName, flags, def) {
   return `<td class="check-cell">
     <button type="button" class="check-btn ${active}" data-site="${escapeHtml(siteName)}" data-flag="${def.flag}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}" aria-pressed="${!!f[def.flag]}">${svgIcon(def.icon)}</button>
   </td>`;
-}
-
-function hasAnyProgress(siteName, flags) {
-  const f = flags[siteName] || {};
-  return PROGRESS_FLAGS.some((d) => !!f[d.flag]);
 }
 
 /* ==========================================================================
@@ -1013,6 +1080,79 @@ function renderGallerySlide() {
   notesEl.hidden = !noteBits.length;
 }
 
+function rowProgressClass(siteName, flags) {
+  const f = flags[siteName] || {};
+  if (f.key) return "row-keyed";
+  if (f.visited) return "row-visited";
+  return "row-todo";
+}
+
+function rowPriorityClass(siteName) {
+  const tier = getSitePriorityTier(siteName);
+  if (tier === "max") return "row-priority-max";
+  if (tier === "medium") return "row-priority-med";
+  return "";
+}
+
+function currentMatchedNameSet() {
+  const tab = wikiTabs[activeWiki];
+  const set = new Set();
+  for (const site of tab.matched || []) {
+    set.add(normalizeName(site.name));
+  }
+  return set;
+}
+
+function priorityChip(name, hitSet) {
+  const hit = hitSet.has(normalizeName(name));
+  const canOpen = siteHasGallery(name);
+  const cls = `priority-chip${hit ? " priority-hit" : ""}${canOpen ? " has-gallery" : ""}`;
+  const title = hit ? t("priorityHitHint") : name;
+  if (canOpen) {
+    return `<button type="button" class="${cls}" data-priority-site="${escapeHtml(name)}" data-gallery-site="${escapeHtml(name)}" title="${escapeHtml(title)}">${escapeHtml(name)}</button>`;
+  }
+  return `<span class="${cls}" data-priority-site="${escapeHtml(name)}" title="${escapeHtml(title)}">${escapeHtml(name)}</span>`;
+}
+
+function renderPriorityWindowColumns(groups, hitSet) {
+  const cols = Object.entries(groups)
+    .map(([windowKey, names]) => {
+      const label = `:${windowKey.replace("-", " – :")}`;
+      const chips = names.map((n) => priorityChip(n, hitSet)).join("");
+      return `<div class="priority-col">
+        <div class="priority-col-head">${escapeHtml(label)}</div>
+        <div class="priority-col-body">${chips}</div>
+      </div>`;
+    })
+    .join("");
+  return `<div class="priority-cols">${cols}</div>`;
+}
+
+function renderPriorityBoard() {
+  const board = document.getElementById("priority-board");
+  if (!board) return;
+  const hitSet = currentMatchedNameSet();
+  const lowChips = SITE_PRIORITY.low.map((n) => priorityChip(n, hitSet)).join("");
+
+  board.innerHTML = `
+    <div class="priority-board-head">
+      <h3 class="priority-board-title">${escapeHtml(t("priorityTitle"))}</h3>
+    </div>
+    <div class="priority-section">
+      <div class="priority-section-title priority-max">${escapeHtml(t("priorityMax"))}</div>
+      ${renderPriorityWindowColumns(SITE_PRIORITY.max, hitSet)}
+    </div>
+    <div class="priority-section">
+      <div class="priority-section-title priority-med">${escapeHtml(t("priorityMedium"))}</div>
+      ${renderPriorityWindowColumns(SITE_PRIORITY.medium, hitSet)}
+    </div>
+    <div class="priority-section">
+      <div class="priority-section-title priority-low">${escapeHtml(t("priorityLow"))}</div>
+      <div class="priority-low-grid">${lowChips}</div>
+    </div>
+  `;
+}
+
 function renderSiteRows(sites, flags) {
   if (!sites.length) return "";
 
@@ -1028,7 +1168,8 @@ function renderSiteRows(sites, flags) {
       const timeText = formatTimeWindow(site);
       const timeClass =
         site.status === "dead" || site.status === "fbi" ? "dead-time" : "";
-      const untouched = hasAnyProgress(site.name, flags) ? "" : "row-untouched";
+      const progressCls = rowProgressClass(site.name, flags);
+      const priorityCls = rowPriorityClass(site.name);
       const checkCells = PROGRESS_FLAGS.map((d) =>
         renderCheckCell(site.name, flags, d)
       ).join("");
@@ -1037,7 +1178,7 @@ function renderSiteRows(sites, flags) {
         ? `<td class="site-name has-gallery"><button type="button" class="site-gallery-btn" data-gallery-site="${escapeHtml(site.name)}" title="${escapeHtml(t("galleryOpenHint"))}"><span class="site-gallery-icon" aria-hidden="true"></span><span class="site-gallery-label">${escapeHtml(site.name)}</span></button></td>`
         : `<td class="site-name">${escapeHtml(site.name)}</td>`;
 
-      return `<tr class="${untouched}">
+      return `<tr class="${progressCls} ${priorityCls}">
         ${nameCell}
         <td class="site-time ${timeClass}">${escapeHtml(timeText)}</td>
         <td class="site-status ${statusClass}">${escapeHtml(label)}</td>
@@ -1108,6 +1249,7 @@ function renderCurrentTab() {
       (unknown.length ? t("unknownCount", { n: unknown.length }) : "");
   }
 
+  renderPriorityBoard();
   updateTabIndicators();
 }
 
@@ -1781,6 +1923,12 @@ function init() {
     flags[site][flag] = !flags[site][flag];
     saveFlags(flags);
     renderCurrentTab();
+  });
+
+  document.getElementById("priority-board").addEventListener("click", (e) => {
+    const galBtn = e.target.closest("[data-gallery-site]");
+    if (!galBtn) return;
+    openGallery(galBtn.dataset.gallerySite);
   });
 
   const galleryRoot = document.getElementById("gallery-lightbox");
