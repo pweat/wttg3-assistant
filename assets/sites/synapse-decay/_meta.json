@@ -1,0 +1,14 @@
+{
+  "name": "Synapse Decay",
+  "slug": "synapse-decay",
+  "pages": [
+    "index",
+    "getmoney",
+    "myfriends",
+    "occasionally",
+    "succulentmeal"
+  ],
+  "pageNotes": {
+    "occasionally": "Succulent and Meal are different clickables. The bottom left picture is clickable."
+  }
+}

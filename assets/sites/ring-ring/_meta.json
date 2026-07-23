@@ -1,0 +1,9 @@
+{
+  "name": "Ring Ring",
+  "slug": "ring-ring",
+  "pages": [
+    "index",
+    "answer"
+  ],
+  "note": "Green text highlight for easier readability."
+}

@@ -301,10 +301,18 @@ const I18N = {
     spoilerHidden: "Ukryte zagrożenie — kliknij, jeśli akceptujesz spoilery.",
     spoilerAccept: "Pokaż spoiler",
     spoilerHide: "Ukryj ponownie",
+    galleryClose: "Zamknij",
+    galleryPrev: "Poprzedni",
+    galleryNext: "Następny",
+    galleryPage: "Podstrona",
+    gallerySiteNote: "Notatka",
+    galleryNoImages: "Brak screenshotów — tylko notatka.",
+    galleryOpenHint: "Kliknij, aby zobaczyć screenshoty",
     help: [
       ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
       ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
+      ["Screenshoty:", "kliknij nazwę strony (ikona aparatu), żeby otworzyć galerię. Strzałki / klawisze ← → przełączają screeny, Esc zamyka. Widać podstronę i notatki."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -486,10 +494,18 @@ const I18N = {
     spoilerHidden: "Hidden threat — click if you accept spoilers.",
     spoilerAccept: "Reveal spoiler",
     spoilerHide: "Hide again",
+    galleryClose: "Close",
+    galleryPrev: "Previous",
+    galleryNext: "Next",
+    galleryPage: "Page",
+    gallerySiteNote: "Note",
+    galleryNoImages: "No screenshots — note only.",
+    galleryOpenHint: "Click to view screenshots",
     help: [
       ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
       ["Progress:", "4 columns: Vis. / Key / KF / File. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
+      ["Screenshots:", "click a site name (camera icon) to open the gallery. Arrow keys / ← → switch images, Esc closes. Subpage label and notes are shown."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -784,6 +800,159 @@ function hasAnyProgress(siteName, flags) {
   return PROGRESS_FLAGS.some((d) => !!f[d.flag]);
 }
 
+/* ==========================================================================
+   Screenshot gallery
+   ========================================================================== */
+
+let SITE_GALLERY = {};
+let galleryState = null;
+
+async function loadGalleryManifest() {
+  try {
+    const res = await fetch("assets/sites/manifest.json");
+    if (!res.ok) throw new Error(String(res.status));
+    const data = await res.json();
+    const map = {};
+    for (const [name, entry] of Object.entries(data)) {
+      map[normalizeName(name)] = { name, ...entry };
+    }
+    SITE_GALLERY = map;
+  } catch (err) {
+    console.warn("Gallery manifest unavailable:", err);
+    SITE_GALLERY = {};
+  }
+}
+
+function getGalleryEntry(siteName) {
+  return SITE_GALLERY[normalizeName(siteName)] || null;
+}
+
+function siteHasGallery(siteName) {
+  const g = getGalleryEntry(siteName);
+  if (!g) return false;
+  if (g.note) return true;
+  return (g.pages || []).some((p) => (p.images || []).length > 0);
+}
+
+function formatPageLabel(pageId) {
+  return String(pageId || "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function buildGallerySlides(entry) {
+  const slides = [];
+  for (const page of entry.pages || []) {
+    for (const src of page.images || []) {
+      slides.push({
+        src,
+        pageId: page.id,
+        pageLabel: formatPageLabel(page.id),
+        pageNote: page.note || null,
+      });
+    }
+  }
+  return slides;
+}
+
+function openGallery(siteName) {
+  const entry = getGalleryEntry(siteName);
+  if (!entry) return;
+
+  const slides = buildGallerySlides(entry);
+  galleryState = {
+    siteName: entry.name || siteName,
+    siteNote: entry.note || null,
+    slides,
+    index: 0,
+  };
+
+  const root = document.getElementById("gallery-lightbox");
+  root.hidden = false;
+  document.body.classList.add("gallery-open");
+  document.getElementById("gallery-site-name").textContent = galleryState.siteName;
+
+  const closeBtn = root.querySelector(".gallery-close");
+  closeBtn.setAttribute("aria-label", t("galleryClose"));
+  closeBtn.title = t("galleryClose");
+  root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
+  root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
+
+  renderGallerySlide();
+  closeBtn.focus();
+}
+
+function closeGallery() {
+  const root = document.getElementById("gallery-lightbox");
+  if (!root || root.hidden) return;
+  root.hidden = true;
+  document.body.classList.remove("gallery-open");
+  const img = document.getElementById("gallery-image");
+  img.removeAttribute("src");
+  img.alt = "";
+  galleryState = null;
+}
+
+function galleryStep(delta) {
+  if (!galleryState || !galleryState.slides.length) return;
+  const n = galleryState.slides.length;
+  galleryState.index = (galleryState.index + delta + n) % n;
+  renderGallerySlide();
+}
+
+function renderGallerySlide() {
+  if (!galleryState) return;
+  const { slides, index, siteNote } = galleryState;
+  const img = document.getElementById("gallery-image");
+  const empty = document.getElementById("gallery-empty");
+  const pageLabel = document.getElementById("gallery-page-label");
+  const notesEl = document.getElementById("gallery-notes");
+  const counter = document.getElementById("gallery-counter");
+  const prevBtn = document.querySelector("[data-gallery-prev]");
+  const nextBtn = document.querySelector("[data-gallery-next]");
+
+  const noteBits = [];
+  if (siteNote) {
+    noteBits.push(
+      `<div class="gallery-note"><span class="gallery-note-label">${escapeHtml(t("gallerySiteNote"))}</span>${escapeHtml(siteNote)}</div>`
+    );
+  }
+
+  if (!slides.length) {
+    img.hidden = true;
+    img.removeAttribute("src");
+    empty.hidden = false;
+    empty.textContent = t("galleryNoImages");
+    pageLabel.textContent = "";
+    pageLabel.hidden = true;
+    counter.textContent = "";
+    prevBtn.hidden = true;
+    nextBtn.hidden = true;
+    notesEl.innerHTML = noteBits.join("");
+    notesEl.hidden = !noteBits.length;
+    return;
+  }
+
+  const slide = slides[index];
+  img.hidden = false;
+  empty.hidden = true;
+  img.src = slide.src;
+  img.alt = `${galleryState.siteName} — ${slide.pageLabel}`;
+  pageLabel.hidden = false;
+  pageLabel.textContent = `${t("galleryPage")}: ${slide.pageLabel}`;
+  counter.textContent = `${index + 1} / ${slides.length}`;
+  prevBtn.hidden = slides.length < 2;
+  nextBtn.hidden = slides.length < 2;
+
+  if (slide.pageNote) {
+    noteBits.push(
+      `<div class="gallery-note page"><span class="gallery-note-label">${escapeHtml(slide.pageLabel)}</span>${escapeHtml(slide.pageNote)}</div>`
+    );
+  }
+  notesEl.innerHTML = noteBits.join("");
+  notesEl.hidden = !noteBits.length;
+}
+
 function renderSiteRows(sites, flags) {
   if (!sites.length) return "";
 
@@ -803,9 +972,13 @@ function renderSiteRows(sites, flags) {
       const checkCells = PROGRESS_FLAGS.map((d) =>
         renderCheckCell(site.name, flags, d)
       ).join("");
+      const hasGal = siteHasGallery(site.name);
+      const nameCell = hasGal
+        ? `<td class="site-name has-gallery"><button type="button" class="site-gallery-btn" data-gallery-site="${escapeHtml(site.name)}" title="${escapeHtml(t("galleryOpenHint"))}"><span class="site-gallery-icon" aria-hidden="true"></span><span class="site-gallery-label">${escapeHtml(site.name)}</span></button></td>`
+        : `<td class="site-name">${escapeHtml(site.name)}</td>`;
 
       return `<tr class="${untouched}">
-        <td class="site-name">${escapeHtml(site.name)}</td>
+        ${nameCell}
         <td class="site-time ${timeClass}">${escapeHtml(timeText)}</td>
         <td class="site-status ${statusClass}">${escapeHtml(label)}</td>
         ${checkCells}
@@ -1120,6 +1293,14 @@ function applyLanguage() {
   renderMiners();
   renderCurrentTab();
   syncNotebook();
+  if (galleryState) {
+    const root = document.getElementById("gallery-lightbox");
+    root.querySelector(".gallery-close").setAttribute("aria-label", t("galleryClose"));
+    root.querySelector(".gallery-close").title = t("galleryClose");
+    root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
+    root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
+    renderGallerySlide();
+  }
 }
 
 function setLanguage(next) {
@@ -1495,6 +1676,10 @@ function init() {
 
   applyLanguage();
 
+  loadGalleryManifest().then(() => {
+    renderCurrentTab();
+  });
+
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     btn.addEventListener("click", () => setLanguage(btn.dataset.lang));
   });
@@ -1521,6 +1706,11 @@ function init() {
   });
 
   document.getElementById("tracker-results").addEventListener("click", (e) => {
+    const galBtn = e.target.closest("[data-gallery-site]");
+    if (galBtn) {
+      openGallery(galBtn.dataset.gallerySite);
+      return;
+    }
     const btn = e.target.closest(".check-btn");
     if (!btn) return;
     const site = btn.dataset.site;
@@ -1530,6 +1720,35 @@ function init() {
     flags[site][flag] = !flags[site][flag];
     saveFlags(flags);
     renderCurrentTab();
+  });
+
+  const galleryRoot = document.getElementById("gallery-lightbox");
+  galleryRoot.addEventListener("click", (e) => {
+    if (e.target.closest("[data-gallery-close]")) {
+      closeGallery();
+      return;
+    }
+    if (e.target.closest("[data-gallery-prev]")) {
+      galleryStep(-1);
+      return;
+    }
+    if (e.target.closest("[data-gallery-next]")) {
+      galleryStep(1);
+    }
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (!galleryState) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeGallery();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      galleryStep(-1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      galleryStep(1);
+    }
   });
 
   document.querySelectorAll(".info-tab").forEach((btn) => {

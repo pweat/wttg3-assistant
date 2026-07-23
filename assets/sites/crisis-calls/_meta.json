@@ -1,0 +1,15 @@
+{
+  "name": "Crisis Calls",
+  "slug": "crisis-calls",
+  "pages": [
+    "index",
+    "account",
+    "resetpassword"
+  ],
+  "note": "Background color changed to green due to blue text",
+  "pageNotes": {
+    "index": "BONUS WHEEL SPIN IMAGE",
+    "account": "HEADER IMAGE IS CLICKABLE",
+    "resetpassword": "HEADER IMAGE IS CLICKABLE"
+  }
+}

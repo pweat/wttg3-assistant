@@ -1,0 +1,12 @@
+{
+  "name": "Symphoros Chosen",
+  "slug": "symphoros-chosen",
+  "pages": [
+    "index",
+    "live",
+    "sendlinks"
+  ],
+  "pageNotes": {
+    "sendlinks": "The white bar is clickable."
+  }
+}

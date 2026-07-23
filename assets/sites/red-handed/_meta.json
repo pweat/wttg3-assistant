@@ -1,0 +1,12 @@
+{
+  "name": "Red Handed",
+  "slug": "red-handed",
+  "pages": [
+    "index",
+    "login",
+    "post1",
+    "post2",
+    "post4",
+    "post6"
+  ]
+}

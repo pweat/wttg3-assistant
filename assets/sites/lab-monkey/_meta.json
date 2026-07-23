@@ -1,0 +1,10 @@
+{
+  "name": "Lab Monkey",
+  "slug": "lab-monkey",
+  "pages": [
+    "index",
+    "sign-in",
+    "catalog",
+    "error"
+  ]
+}
