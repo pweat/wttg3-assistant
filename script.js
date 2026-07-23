@@ -312,7 +312,7 @@ const I18N = {
       ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
       ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Każda ma swój kolor. Wiersz bez żadnego zaznaczenia jest lekko podświetlony — zapis lokalny."],
-      ["Screenshoty:", "kliknij nazwę strony (ikona aparatu), żeby otworzyć galerię. Strzałki / klawisze ← → przełączają screeny, Esc zamyka. Widać podstronę i notatki."],
+      ["Screenshoty:", "kliknij nazwę strony (ikona aparatu). U góry galerii wybierasz podstronę. Strzałki / ← → przełączają screeny, Esc zamyka."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -505,7 +505,7 @@ const I18N = {
       ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
       ["Progress:", "4 columns: Vis. / Key / KF / File. Each has its own color. Rows with no marks are lightly highlighted — saved locally."],
-      ["Screenshots:", "click a site name (camera icon) to open the gallery. Arrow keys / ← → switch images, Esc closes. Subpage label and notes are shown."],
+      ["Screenshots:", "click a site name (camera icon). Use the page tabs at the top to jump between subpages. Arrow keys switch images, Esc closes."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -842,28 +842,41 @@ function formatPageLabel(pageId) {
 
 function buildGallerySlides(entry) {
   const slides = [];
+  const pages = [];
   for (const page of entry.pages || []) {
-    for (const src of page.images || []) {
+    const imgs = page.images || [];
+    if (!imgs.length) continue;
+    const startIndex = slides.length;
+    const pageLabel = formatPageLabel(page.id);
+    for (const src of imgs) {
       slides.push({
         src,
         pageId: page.id,
-        pageLabel: formatPageLabel(page.id),
+        pageLabel,
         pageNote: page.note || null,
       });
     }
+    pages.push({
+      id: page.id,
+      label: pageLabel,
+      startIndex,
+      count: imgs.length,
+      note: page.note || null,
+    });
   }
-  return slides;
+  return { slides, pages };
 }
 
 function openGallery(siteName) {
   const entry = getGalleryEntry(siteName);
   if (!entry) return;
 
-  const slides = buildGallerySlides(entry);
+  const built = buildGallerySlides(entry);
   galleryState = {
     siteName: entry.name || siteName,
     siteNote: entry.note || null,
-    slides,
+    slides: built.slides,
+    pages: built.pages,
     index: 0,
   };
 
@@ -878,6 +891,7 @@ function openGallery(siteName) {
   root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
   root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
 
+  renderGalleryPageTabs();
   renderGallerySlide();
   closeBtn.focus();
 }
@@ -890,6 +904,7 @@ function closeGallery() {
   const img = document.getElementById("gallery-image");
   img.removeAttribute("src");
   img.alt = "";
+  document.getElementById("gallery-pages").innerHTML = "";
   galleryState = null;
 }
 
@@ -897,7 +912,42 @@ function galleryStep(delta) {
   if (!galleryState || !galleryState.slides.length) return;
   const n = galleryState.slides.length;
   galleryState.index = (galleryState.index + delta + n) % n;
+  renderGalleryPageTabs();
   renderGallerySlide();
+}
+
+function galleryJumpToPage(pageId) {
+  if (!galleryState) return;
+  const page = galleryState.pages.find((p) => p.id === pageId);
+  if (!page) return;
+  galleryState.index = page.startIndex;
+  renderGalleryPageTabs();
+  renderGallerySlide();
+  const wrap = document.querySelector(".gallery-image-wrap");
+  if (wrap) wrap.scrollTop = 0;
+}
+
+function renderGalleryPageTabs() {
+  const el = document.getElementById("gallery-pages");
+  if (!galleryState) {
+    el.innerHTML = "";
+    return;
+  }
+  const { pages, slides, index } = galleryState;
+  if (pages.length <= 1) {
+    el.innerHTML = "";
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  const currentPageId = slides[index]?.pageId;
+  el.innerHTML = pages
+    .map((p) => {
+      const active = p.id === currentPageId ? "active" : "";
+      const count = p.count > 1 ? ` <span class="gallery-page-count">${p.count}</span>` : "";
+      return `<button type="button" class="gallery-page-tab ${active}" role="tab" aria-selected="${p.id === currentPageId}" data-gallery-page="${escapeHtml(p.id)}" title="${escapeHtml(p.label)}">${escapeHtml(p.label)}${count}</button>`;
+    })
+    .join("");
 }
 
 function renderGallerySlide() {
@@ -910,6 +960,7 @@ function renderGallerySlide() {
   const counter = document.getElementById("gallery-counter");
   const prevBtn = document.querySelector("[data-gallery-prev]");
   const nextBtn = document.querySelector("[data-gallery-next]");
+  const wrap = document.querySelector(".gallery-image-wrap");
 
   const noteBits = [];
   if (siteNote) {
@@ -934,12 +985,21 @@ function renderGallerySlide() {
   }
 
   const slide = slides[index];
+  const pageSlides = slides.filter((s) => s.pageId === slide.pageId);
+  const pagePos = pageSlides.findIndex((s) => s.src === slide.src) + 1;
+
   img.hidden = false;
   empty.hidden = true;
-  img.src = slide.src;
+  if (img.getAttribute("src") !== slide.src) {
+    img.src = slide.src;
+    if (wrap) wrap.scrollTop = 0;
+  }
   img.alt = `${galleryState.siteName} — ${slide.pageLabel}`;
   pageLabel.hidden = false;
-  pageLabel.textContent = `${t("galleryPage")}: ${slide.pageLabel}`;
+  pageLabel.textContent =
+    pageSlides.length > 1
+      ? `${slide.pageLabel} · ${pagePos}/${pageSlides.length}`
+      : slide.pageLabel;
   counter.textContent = `${index + 1} / ${slides.length}`;
   prevBtn.hidden = slides.length < 2;
   nextBtn.hidden = slides.length < 2;
@@ -1299,6 +1359,7 @@ function applyLanguage() {
     root.querySelector(".gallery-close").title = t("galleryClose");
     root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
     root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
+    renderGalleryPageTabs();
     renderGallerySlide();
   }
 }
@@ -1726,6 +1787,11 @@ function init() {
   galleryRoot.addEventListener("click", (e) => {
     if (e.target.closest("[data-gallery-close]")) {
       closeGallery();
+      return;
+    }
+    const pageTab = e.target.closest("[data-gallery-page]");
+    if (pageTab) {
+      galleryJumpToPage(pageTab.dataset.galleryPage);
       return;
     }
     if (e.target.closest("[data-gallery-prev]")) {
