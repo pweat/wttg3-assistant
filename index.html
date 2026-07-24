@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WTTG3 Assistant</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
@@ -20,8 +21,8 @@
       <div class="header-meta">
         <button type="button" id="reset-btn" class="btn btn-ghost reset-btn" data-i18n="resetBtn" title="Reset">Reset</button>
         <div class="lang-switch" role="group" aria-label="Language">
-          <button type="button" class="lang-btn active" data-lang="pl" title="Polski">PL</button>
-          <button type="button" class="lang-btn" data-lang="en" title="English">EN</button>
+          <button type="button" class="lang-btn" data-lang="pl" title="Polski">PL</button>
+          <button type="button" class="lang-btn active" data-lang="en" title="English">EN</button>
         </div>
         <span id="clock" class="clock">--:--:--</span>
         <span class="status-dot" data-i18n-title="online" title="Online"></span>
@@ -31,7 +32,7 @@
     <main class="grid">
       <section class="panel tracker" aria-labelledby="tracker-title">
         <div class="panel-head">
-          <h2 id="tracker-title" data-i18n="trackerTitle">Tracker Stron</h2>
+          <h2 id="tracker-title" data-i18n="trackerTitle">Site Tracker</h2>
           <span class="panel-tag">PRIMARY</span>
         </div>
 
@@ -41,12 +42,13 @@
           <button type="button" class="wiki-tab" role="tab" data-wiki="3" aria-selected="false">The Red Mirror</button>
         </div>
 
-        <div class="tracker-input">
-          <label for="site-input" class="sr-only" data-i18n="siteInputLabel">Lista stron z gry</label>
+        <div class="tracker-input is-empty" id="tracker-input">
+          <p class="paste-hint" data-i18n="pasteHint" id="paste-hint">Paste Deep Wiki site lists here</p>
+          <label for="site-input" class="sr-only" data-i18n="siteInputLabel">Site list from the game</label>
           <textarea id="site-input" spellcheck="false"></textarea>
           <div class="tracker-actions">
-            <button type="button" id="analyze-btn" class="btn btn-primary" data-i18n="analyzeBtn">Przeanalizuj strony</button>
-            <button type="button" id="clear-tracker-btn" class="btn btn-ghost" data-i18n="clearTabBtn">Wyczyść zakładkę</button>
+            <button type="button" id="analyze-btn" class="btn btn-primary" data-i18n="analyzeBtn">Analyze sites</button>
+            <button type="button" id="clear-tracker-btn" class="btn btn-ghost" data-i18n="clearTabBtn">Clear tab</button>
             <span id="match-summary" class="match-summary"></span>
           </div>
         </div>
@@ -59,7 +61,7 @@
       <aside class="sidebar">
         <section class="panel miners" aria-labelledby="miners-title">
           <div class="panel-head">
-            <h2 id="miners-title" data-i18n="minersTitle">Koparki</h2>
+            <h2 id="miners-title" data-i18n="minersTitle">Miners</h2>
             <span class="panel-tag">DOS/min</span>
           </div>
           <div id="miners-list" class="miners-list"></div>
@@ -69,7 +71,7 @@
 
         <section class="panel notebook" aria-labelledby="notebook-title">
           <div class="panel-head">
-            <h2 id="notebook-title" data-i18n="notebookTitle">Smart Notatnik</h2>
+            <h2 id="notebook-title" data-i18n="notebookTitle">Smart Notebook</h2>
             <span class="panel-tag">KEYS</span>
           </div>
           <div class="notebook-wrap">
@@ -85,13 +87,14 @@
 
       <section class="panel faq" aria-labelledby="faq-title">
         <div class="panel-head">
-          <h2 id="faq-title" data-i18n="infoTitle">Instrukcja / Zagrożenia</h2>
+          <h2 id="faq-title" data-i18n="infoTitle">Guide / Threats</h2>
         </div>
         <div class="info-tabs" role="tablist" data-i18n-aria="infoAria">
-          <button type="button" class="info-tab active" data-info="help" aria-selected="true" data-i18n="tabHelp">Jak używać</button>
+          <button type="button" class="info-tab active" data-info="help" aria-selected="true" data-i18n="tabHelp">How to use</button>
           <button type="button" class="info-tab" data-info="faq" aria-selected="false" data-i18n="tabFaq">FAQ</button>
-          <button type="button" class="info-tab" data-info="sensors" aria-selected="false" data-i18n="tabSensors">Sensory</button>
-          <button type="button" class="info-tab" data-info="threats" aria-selected="false" data-i18n="tabThreats">Zagrożenia</button>
+          <button type="button" class="info-tab" data-info="sensors" aria-selected="false" data-i18n="tabSensors">Sensors</button>
+          <button type="button" class="info-tab" data-info="threats" aria-selected="false" data-i18n="tabThreats">Threats</button>
+          <button type="button" class="info-tab" data-info="credits" aria-selected="false" data-i18n="tabCredits">Credits</button>
         </div>
 
         <div id="info-help" class="info-pane active">
@@ -109,17 +112,43 @@
             <table class="threats-table">
               <thead>
                 <tr>
-                  <th data-i18n="threatColThreat">Zagrożenie</th>
-                  <th data-i18n="threatColCue">Sygnał</th>
-                  <th data-i18n="threatColCounter">Obrona</th>
+                  <th data-i18n="threatColThreat">Threat</th>
+                  <th data-i18n="threatColCue">Cue</th>
+                  <th data-i18n="threatColCounter">Counter</th>
                 </tr>
               </thead>
               <tbody id="threats-body"></tbody>
             </table>
           </div>
         </div>
+        <div id="info-credits" class="info-pane">
+          <div id="credits-body" class="credits-body"></div>
+        </div>
       </section>
     </main>
+  </div>
+
+  <div id="welcome-overlay" class="welcome-overlay" hidden>
+    <div class="welcome-dialog" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+      <div class="welcome-scroll">
+        <div class="welcome-section">
+          <div class="welcome-rule" data-i18n="welcomeFirstVisit">----- [First Visit Detected] -----</div>
+          <h2 id="welcome-title" class="welcome-heading" data-i18n="welcomeHello">Welcome!</h2>
+          <p class="welcome-text" data-i18n="welcomeIntro"></p>
+        </div>
+        <div class="welcome-section">
+          <div class="welcome-rule" data-i18n="welcomeWarningHead">----- [Content Warning!] -----</div>
+          <p class="welcome-text" data-i18n="creditsContentWarning"></p>
+        </div>
+        <div class="welcome-section">
+          <div class="welcome-rule" data-i18n="welcomeCreditsHead">----- [Credits / Sources] -----</div>
+          <div id="welcome-credits" class="credits-body credits-body-welcome"></div>
+        </div>
+      </div>
+      <div class="welcome-actions">
+        <button type="button" id="welcome-accept" class="btn btn-primary welcome-accept" data-i18n="welcomeAccept">&gt;&gt; I understand</button>
+      </div>
+    </div>
   </div>
 
   <div id="gallery-lightbox" class="gallery-lightbox" hidden>

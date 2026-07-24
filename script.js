@@ -232,6 +232,46 @@ const STORAGE_ACTIVE_WIKI = "wttg3_active_wiki";
 const STORAGE_LANG = "wttg3_lang";
 const STORAGE_BOMB_SPOILER = "wttg3_bomb_spoiler";
 const STORAGE_LAYOUT = "wttg3_layout";
+const STORAGE_WELCOME = "wttg3_welcome_accepted";
+
+/* ==========================================================================
+   Credits / Steam guide sources
+   Used by Welcome overlay + Credits tab.
+   Fields: author, url (guide), profileUrl (optional)
+   ========================================================================== */
+
+const CREDIT_SOURCES = [
+  {
+    author: "TwisTonFire",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3767348828",
+    profileUrl: "https://steamcommunity.com/id/TwisTonFire",
+  },
+  {
+    author: "MazKnight | Twitch",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3767406609",
+    profileUrl: "https://steamcommunity.com/profiles/76561198832123127",
+  },
+  {
+    author: "freddy fart bear",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3767824461",
+    profileUrl: "https://steamcommunity.com/profiles/76561198071891705",
+  },
+  {
+    author: "Indeed_Mike",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3766961707",
+    profileUrl: "https://steamcommunity.com/profiles/76561199207026344",
+  },
+  {
+    author: "larien90",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3767324870",
+    profileUrl: "https://steamcommunity.com/id/larien90",
+  },
+  {
+    author: "Nojembre",
+    url: "https://steamcommunity.com/sharedfiles/filedetails/?id=3768000331",
+    profileUrl: "https://steamcommunity.com/id/nojembre",
+  },
+];
 
 const WIKI_NAMES = {
   1: "Codex of Silence",
@@ -259,6 +299,26 @@ const I18N = {
     tabFaq: "FAQ",
     tabSensors: "Sensory",
     tabThreats: "Zagrożenia",
+    tabCredits: "Credits",
+    pasteHint: "Tutaj wklejasz listę stron z Deep Wiki",
+    welcomeFirstVisit: "----- [Wykryto pierwszą wizytę] -----",
+    welcomeHello: "Witaj!",
+    welcomeIntro:
+      "Ten asystent to narzędzia i ściągawki pomagające w Welcome to the Game III. Instrukcję znajdziesz w zakładce „Jak używać”.",
+    welcomeWarningHead: "----- [Ostrzeżenie o treści!] -----",
+    welcomeCreditsHead: "----- [Credits / Źródła] -----",
+    welcomeAccept: ">> Rozumiem i akceptuję",
+    creditsTitle: "Credits i źródła",
+    creditsDisclaimer:
+      "Stworzyłem tylko tego asystenta (UI i narzędzia). Nie jestem powiązany z twórcami gry. Dane, notatki i screenshoty pochodzą z publicznych poradników społeczności Steam — nie tworzyłem ich treści.",
+    creditsSourcesHeading: "Poradniki Steam (źródła):",
+    creditsEmpty: "Lista źródeł zostanie wkrótce uzupełniona.",
+    creditsGuideLink: "Poradnik",
+    creditsProfileLink: "Profil",
+    creditsContentWarning:
+      "Asystent pokazuje zrzuty i treści wyjęte z Welcome to the Game III. Mogą być niepokojące. Korzystasz na własną odpowiedzialność.",
+    creditsUnofficial:
+      "Fanowski, nieoficjalny projekt. Welcome to the Game III i powiązane znaki należą do ich właścicieli.",
     sensorsIntro: "Setup 3 motion sensorów przy motelu — kolejność i kierunek mają znaczenie.",
     sensorsDistinguishTitle: "Jak odróżnić Tannera od Lucasa",
     sensorsDistinguishBody: [
@@ -359,21 +419,19 @@ const I18N = {
     priorityLow: "Low (zawsze / 100%)",
     priorityHitHint: "Masz tę stronę na liście",
     help: [
-      ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne zakładki. Wklej listę, przeanalizuj, potem przełącz na kolejną i wklej osobno."],
-      ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
-      ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Do przejrzenia = mocniej podświetlone. Odw. = przyciemnione. Klucz = prawie wygaszone."],
-      ["Priorytety:", "tablica pod listą — Max / Medium / Low. Wykryte na bieżącej zakładce podświetlają się. Kliknij nazwę = galeria."],
-      ["Screenshoty:", "kliknij nazwę strony. Zakładki = podstrony. Start zawsze 100%; +/− lub Ctrl+scroll = zoom. ← → screeny, Esc zamyka."],
-      ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
-      ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
-      ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
-      ["Montaż 1–8:", "zdekryptowane kody wpadają w sloty #1–#8 według numeru (kolejność wklejenia dowolna). Cel: zebrać wszystkie 8."],
-      ["Kopiowanie:", "kliknij chip klucza, żeby skopiować „N - kod”. Przy 8/8 użyj „Kopiuj finalny klucz” — skleja same kody w kolejności 1→8."],
-      ["Sensory:", "zakładka z setupem 3 motion sensorów + jak odróżnić Tannera od Lucasa po długości bipania."],
-      ["Zagrożenia:", "tabela cue/obrona. Jeden wpis jest pod spoilerem — odsłania się dopiero po akceptacji."],
-      ["FAQ:", "krótkie pytania o hazard, meth, Bomb Maker, source code i pauzę przy komputerze."],
-      ["Język i zapis:", "PL/EN w prawym górnym rogu. Notatki, postęp i listy DW zapisują się lokalnie. Reset czyści wszystko."],
-      ["Layout:", "przeciągnij uchwyty między koparkami/notatnikiem oraz nad sekcją instrukcji, aby zmienić wysokości."],
+      ["Tracker / zakładki:", "Codex of Silence, Toxic Delights i The Red Mirror to osobne listy. Wyróżnione pole u góry = miejsce na wklejenie. Wklej listę → „Przeanalizuj strony”, potem przełącz zakładkę i wklej kolejną."],
+      ["Format wklejania:", "linie „Nazwa - opis” — liczy się tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
+      ["Postęp:", "Odw. / Klucz / KF / Plik. Do zrobienia = mocniej podświetlone. Odwiedzona = przygaszona (także na tablicy priorytetów). Klucz = prawie wygaszona."],
+      ["Priorytety:", "tablica Max / Medium / Low pod listą. Strony z bieżącej zakładki świecą się na zielono, dopóki nie oznaczysz Odw./Klucz. Klik w nazwę = galeria."],
+      ["Screenshoty:", "klik w nazwę strony. Start zawsze 100%; +/−, Ctrl+scroll lub 0 = zoom. ← → między obrazkami, Esc zamyka. Dwuklik = 100% ↔ 200%."],
+      ["Okna czasowe:", "strony timed: minuty każdej godziny gry (np. :00–:14). Martwe = zawsze offline."],
+      ["Koparki:", "VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
+      ["Notatnik — klucze:", "format „N - kod”. Długi kod = zaszyfrowany. Krótki = zdekryptowany (idzie do montażu)."],
+      ["Montaż 1–8:", "zdekryptowane kody w slotach #1–#8 według numeru. Cel: zebrać wszystkie 8, potem „Kopiuj finalny klucz”."],
+      ["Sensory / zagrożenia:", "zakładki z setupem 3 sensorów oraz tabelą cue/obrona. Bomb Maker jest pod spoilerem."],
+      ["Credits:", "zakładka z zastrzeżeniami i linkami do poradników Steam. Pierwsze wejście pokazuje ekran powitalny z akceptacją."],
+      ["Język i zapis:", "domyślnie EN; PL/EN w prawym górnym rogu. Notatki, postęp i listy zapisują się lokalnie. Reset czyści postęp (nie ekran powitalny)."],
+      ["Layout:", "przeciągnij uchwyty między panelami (koparki, priorytety, instrukcja), aby zmienić wysokości."],
     ],
     faq: [
       {
@@ -461,6 +519,26 @@ const I18N = {
     tabFaq: "FAQ",
     tabSensors: "Sensors",
     tabThreats: "Threats",
+    tabCredits: "Credits",
+    pasteHint: "Paste Deep Wiki site lists here",
+    welcomeFirstVisit: "----- [First Visit Detected] -----",
+    welcomeHello: "Welcome!",
+    welcomeIntro:
+      "This assistant is a set of guides and tools for Welcome to the Game III. How the tools work is explained under “How to use”.",
+    welcomeWarningHead: "----- [Content Warning!] -----",
+    welcomeCreditsHead: "----- [Credits / Sources] -----",
+    welcomeAccept: ">> I understand and accept",
+    creditsTitle: "Credits & sources",
+    creditsDisclaimer:
+      "I only built this assistant (UI and tools). I am not affiliated with the game’s creators. Site data, notes, and screenshots come from public Steam community guides — I did not author that guide content.",
+    creditsSourcesHeading: "Steam guides (sources):",
+    creditsEmpty: "Source list will be added shortly.",
+    creditsGuideLink: "Guide",
+    creditsProfileLink: "Profile",
+    creditsContentWarning:
+      "This tool shows extracted screenshots and content from Welcome to the Game III. Material may be disturbing. Use at your own discretion.",
+    creditsUnofficial:
+      "Fan-made, unofficial project. Welcome to the Game III and related marks belong to their respective owners.",
     sensorsIntro: "3 motion sensor motel setup — placement and facing direction matter.",
     sensorsDistinguishTitle: "How to distinguish between Tanner and Lucas",
     sensorsDistinguishBody: [
@@ -561,21 +639,19 @@ const I18N = {
     priorityLow: "Low (always / 100%)",
     priorityHitHint: "This site is on your list",
     help: [
-      ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate tabs. Paste a list, analyze, then switch and paste the next one."],
-      ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
-      ["Progress:", "4 columns: Vis. / Key / KF / File. To-do rows are highlighted. Visited = dimmed. Key found = nearly extinguished."],
-      ["Priorities:", "board under the list — Max / Medium / Low. Sites on the current tab light up. Click a name to open the gallery."],
-      ["Screenshots:", "click a site name. Page tabs jump subpages. Always starts at 100%; +/− or Ctrl+scroll to zoom. Arrows switch images, Esc closes."],
-      ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
-      ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
-      ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
-      ["Assembly 1–8:", "decrypted codes fill slots #1–#8 by number (paste order does not matter). Goal: collect all 8."],
-      ["Copying:", "click a key chip to copy “N - code”. At 8/8 use “Copy final key” — concatenates codes only in order 1→8."],
-      ["Sensors:", "tab with the 3 motion-sensor setup + how to tell Tanner from Lucas by beep length."],
-      ["Threats:", "cue/counter table. One entry is behind a spoiler — revealed only after you accept."],
-      ["FAQ:", "short tips on gambling, meth, Bomb Maker, source code, and pausing at the computer."],
-      ["Language & save:", "PL/EN in the top-right. Notes, progress and DW lists persist locally. Reset clears everything."],
-      ["Layout:", "drag the handles between miners/notebook and above the guide section to change heights."],
+      ["Tracker / tabs:", "Codex of Silence, Toxic Delights and The Red Mirror are separate lists. The highlighted box at the top is where you paste. Paste → Analyze, then switch tabs for the next Deep Wiki."],
+      ["Paste format:", "lines like “Name - description” — only text before the dash counts. List order = paste order."],
+      ["Progress:", "Vis. / Key / KF / File. To-do rows are highlighted. Visited dims the row and the priority chip. Key found nearly extinguishes it."],
+      ["Priorities:", "Max / Medium / Low board under the list. Sites on the current tab glow green until marked Visited/Key. Click a name for the gallery."],
+      ["Screenshots:", "click a site name. Always starts at 100%; +/−, Ctrl+scroll, or 0 to zoom. Arrows change images, Esc closes. Double-click toggles 100% ↔ 200%."],
+      ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites stay offline."],
+      ["Miners:", "VM Grid Tier I–III with DOS/min — pick the highest in your unlocked tier."],
+      ["Notebook — keys:", "format “N - code”. Long code = encrypted. Short = decrypted (feeds assembly)."],
+      ["Assembly 1–8:", "decrypted codes fill slots #1–#8 by number. Collect all 8, then “Copy final key”."],
+      ["Sensors / threats:", "tabs for the 3-sensor setup and cue/counter table. Bomb Maker is behind a spoiler."],
+      ["Credits:", "tab with disclaimers and Steam guide links. First visit shows a welcome screen you must accept."],
+      ["Language & save:", "English by default; PL/EN switch top-right. Notes, progress and lists persist locally. Reset clears progress (not the welcome accept)."],
+      ["Layout:", "drag the handles between panels (miners, priority board, guide) to resize."],
     ],
     faq: [
       {
@@ -650,7 +726,7 @@ const I18N = {
   },
 };
 
-let lang = "pl";
+let lang = "en";
 
 function t(key, vars) {
   let str = (I18N[lang] && I18N[lang][key]) ?? (I18N.pl[key] ?? key);
@@ -1369,6 +1445,7 @@ function renderCurrentTab() {
 
   renderPriorityBoard();
   updateTabIndicators();
+  syncTrackerEmptyState();
 }
 
 function switchWiki(wiki) {
@@ -1387,6 +1464,7 @@ function switchWiki(wiki) {
 
   saveWikiTabs();
   renderCurrentTab();
+  syncTrackerEmptyState();
 }
 
 function analyze() {
@@ -1415,6 +1493,7 @@ function clearCurrentTab() {
   document.getElementById("site-input").value = "";
   saveWikiTabs();
   renderCurrentTab();
+  syncTrackerEmptyState();
 }
 
 /* ==========================================================================
@@ -1563,6 +1642,95 @@ function renderThreats() {
     .join("");
 }
 
+function buildCreditsHtml(opts = {}) {
+  const { forWelcome = false } = opts;
+  const sources = CREDIT_SOURCES.filter((s) => s && (s.url || s.author || s.profileUrl));
+  let sourcesHtml;
+  if (!sources.length) {
+    sourcesHtml = `<p class="credits-empty">${escapeHtml(t("creditsEmpty"))}</p>`;
+  } else {
+    sourcesHtml = `<ul class="credits-sources">${sources
+      .map((s) => {
+        const author = s.author
+          ? s.profileUrl
+            ? `<a class="credits-author" href="${escapeHtml(s.profileUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.author)}</a>`
+            : `<span class="credits-author">${escapeHtml(s.author)}</span>`
+          : "";
+        const links = [];
+        if (s.url) {
+          links.push(
+            `<a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("creditsGuideLink"))}</a>`
+          );
+        }
+        if (s.profileUrl) {
+          links.push(
+            `<a href="${escapeHtml(s.profileUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(t("creditsProfileLink"))}</a>`
+          );
+        }
+        return `<li><div class="credits-source-name">${author}</div><div class="credits-source-links">${links.join(" · ")}</div></li>`;
+      })
+      .join("")}</ul>`;
+  }
+
+  if (forWelcome) {
+    return `
+      <p class="credits-block">${escapeHtml(t("creditsDisclaimer"))}</p>
+      <p class="credits-block muted">${escapeHtml(t("creditsUnofficial"))}</p>
+      <h4 class="credits-subhead">${escapeHtml(t("creditsSourcesHeading"))}</h4>
+      ${sourcesHtml}
+    `;
+  }
+
+  return `
+    <h3 class="credits-heading">${escapeHtml(t("creditsTitle"))}</h3>
+    <p class="credits-block">${escapeHtml(t("creditsDisclaimer"))}</p>
+    <p class="credits-block credits-warn">${escapeHtml(t("creditsContentWarning"))}</p>
+    <p class="credits-block muted">${escapeHtml(t("creditsUnofficial"))}</p>
+    <h4 class="credits-subhead">${escapeHtml(t("creditsSourcesHeading"))}</h4>
+    ${sourcesHtml}
+  `;
+}
+
+function renderCredits() {
+  const body = document.getElementById("credits-body");
+  if (body) body.innerHTML = buildCreditsHtml();
+  const welcome = document.getElementById("welcome-credits");
+  if (welcome) welcome.innerHTML = buildCreditsHtml({ forWelcome: true });
+}
+
+function isWelcomeAccepted() {
+  return localStorage.getItem(STORAGE_WELCOME) === "1";
+}
+
+function acceptWelcome() {
+  localStorage.setItem(STORAGE_WELCOME, "1");
+  const overlay = document.getElementById("welcome-overlay");
+  if (overlay) overlay.hidden = true;
+  document.body.classList.remove("welcome-locked");
+}
+
+function showWelcomeIfNeeded() {
+  const overlay = document.getElementById("welcome-overlay");
+  if (!overlay) return;
+  if (isWelcomeAccepted()) {
+    overlay.hidden = true;
+    document.body.classList.remove("welcome-locked");
+    return;
+  }
+  overlay.hidden = false;
+  document.body.classList.add("welcome-locked");
+  renderCredits();
+  document.getElementById("welcome-accept")?.focus();
+}
+
+function syncTrackerEmptyState() {
+  const wrap = document.getElementById("tracker-input");
+  const input = document.getElementById("site-input");
+  if (!wrap || !input) return;
+  const empty = !String(input.value || "").trim();
+  wrap.classList.toggle("is-empty", empty);
+}
+
 function applyStaticI18n() {
   document.documentElement.lang = lang;
 
@@ -1610,9 +1778,11 @@ function applyLanguage() {
   renderFaq();
   renderSensors();
   renderThreats();
+  renderCredits();
   renderMiners();
   renderCurrentTab();
   syncNotebook();
+  syncTrackerEmptyState();
   if (galleryState) {
     const root = document.getElementById("gallery-lightbox");
     root.querySelector(".gallery-close").setAttribute("aria-label", t("galleryClose"));
@@ -1989,7 +2159,7 @@ function tickClock() {
 
 function init() {
   const savedLang = localStorage.getItem(STORAGE_LANG);
-  lang = savedLang === "en" ? "en" : "pl";
+  lang = savedLang === "pl" ? "pl" : "en";
 
   tickClock();
   setInterval(tickClock, 1000);
@@ -2016,6 +2186,7 @@ function init() {
   if (savedNotes) notebook.value = savedNotes;
 
   applyLanguage();
+  showWelcomeIfNeeded();
 
   loadGalleryManifest().then(() => {
     renderCurrentTab();
@@ -2026,6 +2197,8 @@ function init() {
   });
 
   document.getElementById("reset-btn").addEventListener("click", factoryReset);
+
+  document.getElementById("welcome-accept")?.addEventListener("click", acceptWelcome);
 
   document.getElementById("threats-body").addEventListener("click", (e) => {
     const btn = e.target.closest("[data-spoiler-action]");
@@ -2044,6 +2217,7 @@ function init() {
   siteInput.addEventListener("input", () => {
     wikiTabs[activeWiki].input = siteInput.value;
     saveWikiTabs();
+    syncTrackerEmptyState();
   });
 
   document.getElementById("tracker-results").addEventListener("click", (e) => {
@@ -2118,6 +2292,13 @@ function init() {
   });
 
   document.addEventListener("keydown", (e) => {
+    if (!isWelcomeAccepted()) {
+      if (e.key === "Enter" && document.activeElement?.id === "welcome-accept") {
+        e.preventDefault();
+        acceptWelcome();
+      }
+      return;
+    }
     if (!galleryState) return;
     if (e.key === "Escape") {
       e.preventDefault();
