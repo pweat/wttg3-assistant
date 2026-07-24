@@ -1829,7 +1829,7 @@ body.gallery-open {
 
 .gallery-stage {
   display: grid;
-  grid-template-columns: 40px 1fr 40px;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
   gap: 8px;
   align-items: stretch;
   min-height: 0;
@@ -1838,6 +1838,8 @@ body.gallery-open {
 
 .gallery-image-wrap {
   display: block;
+  min-width: 0;
+  width: 100%;
   min-height: 200px;
   max-height: min(64vh, 680px);
   background: rgba(0, 0, 0, 0.35);
@@ -1851,7 +1853,7 @@ body.gallery-open {
   display: block;
   width: 100%;
   height: auto;
-  max-width: 100%;
+  max-width: none;
   vertical-align: top;
 }
 
@@ -1891,6 +1893,43 @@ body.gallery-open {
   gap: 12px;
 }
 
+.gallery-zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gallery-zoom[hidden] {
+  display: none;
+}
+
+.gallery-zoom-btn,
+.gallery-zoom-label {
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.gallery-zoom-btn:hover,
+.gallery-zoom-label:hover {
+  color: var(--cyan);
+  border-color: rgba(61, 224, 255, 0.45);
+}
+
+.gallery-zoom-label {
+  min-width: 52px;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
 .gallery-counter {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -1908,7 +1947,7 @@ body.gallery-open {
   }
 
   .gallery-stage {
-    grid-template-columns: 32px 1fr 32px;
+    grid-template-columns: 32px minmax(0, 1fr) 32px;
     gap: 4px;
   }
 

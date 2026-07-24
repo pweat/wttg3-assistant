@@ -350,6 +350,9 @@ const I18N = {
     gallerySiteNote: "Notatka",
     galleryNoImages: "Brak screenshotów — tylko notatka.",
     galleryOpenHint: "Kliknij, aby zobaczyć screenshoty",
+    galleryZoomIn: "Przybliż",
+    galleryZoomOut: "Oddal",
+    galleryZoomReset: "Reset zoom",
     priorityTitle: "Priorytet stron",
     priorityMax: "Max (25% / h)",
     priorityMedium: "Medium (50% / h)",
@@ -360,7 +363,7 @@ const I18N = {
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
       ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Do przejrzenia = mocniej podświetlone. Odw. = przyciemnione. Klucz = prawie wygaszone."],
       ["Priorytety:", "tablica pod listą — Max / Medium / Low. Wykryte na bieżącej zakładce podświetlają się. Kliknij nazwę = galeria."],
-      ["Screenshoty:", "kliknij nazwę strony (ikona aparatu). U góry galerii wybierasz podstronę. Strzałki / ← → przełączają screeny, Esc zamyka."],
+      ["Screenshoty:", "kliknij nazwę strony. Zakładki = podstrony. Małe wycinki auto-przybliżają się; +/− / Ctrl+scroll = zoom. ← → screeny, Esc zamyka."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -549,6 +552,9 @@ const I18N = {
     gallerySiteNote: "Note",
     galleryNoImages: "No screenshots — note only.",
     galleryOpenHint: "Click to view screenshots",
+    galleryZoomIn: "Zoom in",
+    galleryZoomOut: "Zoom out",
+    galleryZoomReset: "Reset zoom",
     priorityTitle: "Site priority",
     priorityMax: "Max (25% / h)",
     priorityMedium: "Medium (50% / h)",
@@ -559,7 +565,7 @@ const I18N = {
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
       ["Progress:", "4 columns: Vis. / Key / KF / File. To-do rows are highlighted. Visited = dimmed. Key found = nearly extinguished."],
       ["Priorities:", "board under the list — Max / Medium / Low. Sites on the current tab light up. Click a name to open the gallery."],
-      ["Screenshots:", "click a site name (camera icon). Use the page tabs at the top to jump between subpages. Arrow keys switch images, Esc closes."],
+      ["Screenshots:", "click a site name. Page tabs jump subpages. Small crops auto-zoom; +/− / Ctrl+scroll to zoom. Arrows switch images, Esc closes."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -874,6 +880,95 @@ function renderCheckCell(siteName, flags, def) {
 let SITE_GALLERY = {};
 let galleryState = null;
 
+const GALLERY_ZOOM_MIN = 1;
+const GALLERY_ZOOM_MAX = 5;
+const GALLERY_ZOOM_STEP = 0.25;
+
+function clampGalleryZoom(z) {
+  return Math.min(GALLERY_ZOOM_MAX, Math.max(GALLERY_ZOOM_MIN, Math.round(z * 100) / 100));
+}
+
+/** Suggest zoom so narrow Steam crops fill the viewer more readably. */
+function suggestedGalleryZoom(img, wrap) {
+  if (!img || !img.naturalWidth) return 1;
+  const wrapW = wrap?.clientWidth || 0;
+  const nw = img.naturalWidth;
+  const nh = img.naturalHeight;
+  // Very small crops (click-spot closeups)
+  if (nw < 400 || (nw < 600 && nh < 400)) return 2.5;
+  if (nw < 700) return 2;
+  if (nw < 1000) return 1.5;
+  // Tall narrow strips
+  if (wrapW && nw < wrapW * 0.55) return 2;
+  return 1;
+}
+
+function applyGalleryZoom() {
+  const img = document.getElementById("gallery-image");
+  const label = document.querySelector("[data-gallery-zoom-reset]");
+  const wrap = document.querySelector(".gallery-image-wrap");
+  if (!galleryState || !img) return;
+  const z = galleryState.zoom || 1;
+  // Percentage of the wrap width — wrap must have definite width (minmax(0,1fr)).
+  img.style.width = `${z * 100}%`;
+  img.classList.toggle("is-zoomed", z > 1);
+  if (wrap) wrap.classList.toggle("is-zoomed", z > 1);
+  if (label) label.textContent = `${Math.round(z * 100)}%`;
+}
+
+function galleryZoomBy(delta) {
+  if (!galleryState || !galleryState.slides.length) return;
+  galleryState.zoom = clampGalleryZoom((galleryState.zoom || 1) + delta);
+  applyGalleryZoom();
+}
+
+function galleryZoomSet(z) {
+  if (!galleryState || !galleryState.slides.length) return;
+  galleryState.zoom = clampGalleryZoom(z);
+  applyGalleryZoom();
+  const wrap = document.querySelector(".gallery-image-wrap");
+  if (wrap && galleryState.zoom <= 1) {
+    wrap.scrollTop = 0;
+    wrap.scrollLeft = 0;
+  }
+}
+
+function resetGalleryZoomForCurrentImage() {
+  if (!galleryState) return;
+  const img = document.getElementById("gallery-image");
+  const wrap = document.querySelector(".gallery-image-wrap");
+  const apply = () => {
+    galleryState.zoom = suggestedGalleryZoom(img, wrap);
+    applyGalleryZoom();
+    if (wrap) {
+      wrap.scrollTop = 0;
+      wrap.scrollLeft = 0;
+    }
+  };
+  if (img.complete && img.naturalWidth) apply();
+  else img.addEventListener("load", apply, { once: true });
+}
+
+function syncGalleryZoomLabels() {
+  const root = document.getElementById("gallery-lightbox");
+  if (!root) return;
+  const zin = root.querySelector("[data-gallery-zoom-in]");
+  const zout = root.querySelector("[data-gallery-zoom-out]");
+  const zreset = root.querySelector("[data-gallery-zoom-reset]");
+  if (zin) {
+    zin.setAttribute("aria-label", t("galleryZoomIn"));
+    zin.title = t("galleryZoomIn");
+  }
+  if (zout) {
+    zout.setAttribute("aria-label", t("galleryZoomOut"));
+    zout.title = t("galleryZoomOut");
+  }
+  if (zreset) {
+    zreset.setAttribute("aria-label", t("galleryZoomReset"));
+    zreset.title = t("galleryZoomReset");
+  }
+}
+
 async function loadGalleryManifest() {
   try {
     const res = await fetch("assets/sites/manifest.json");
@@ -945,6 +1040,7 @@ function openGallery(siteName) {
     slides: built.slides,
     pages: built.pages,
     index: 0,
+    zoom: 1,
   };
 
   const root = document.getElementById("gallery-lightbox");
@@ -957,9 +1053,11 @@ function openGallery(siteName) {
   closeBtn.title = t("galleryClose");
   root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
   root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
+  syncGalleryZoomLabels();
 
   renderGalleryPageTabs();
   renderGallerySlide();
+  resetGalleryZoomForCurrentImage();
   closeBtn.focus();
 }
 
@@ -971,6 +1069,8 @@ function closeGallery() {
   const img = document.getElementById("gallery-image");
   img.removeAttribute("src");
   img.alt = "";
+  img.style.width = "";
+  img.classList.remove("is-zoomed");
   document.getElementById("gallery-pages").innerHTML = "";
   galleryState = null;
 }
@@ -981,6 +1081,7 @@ function galleryStep(delta) {
   galleryState.index = (galleryState.index + delta + n) % n;
   renderGalleryPageTabs();
   renderGallerySlide();
+  resetGalleryZoomForCurrentImage();
 }
 
 function galleryJumpToPage(pageId) {
@@ -990,10 +1091,8 @@ function galleryJumpToPage(pageId) {
   galleryState.index = page.startIndex;
   renderGalleryPageTabs();
   renderGallerySlide();
-  const wrap = document.querySelector(".gallery-image-wrap");
-  if (wrap) wrap.scrollTop = 0;
+  resetGalleryZoomForCurrentImage();
 }
-
 function renderGalleryPageTabs() {
   const el = document.getElementById("gallery-pages");
   if (!galleryState) {
@@ -1039,6 +1138,8 @@ function renderGallerySlide() {
   if (!slides.length) {
     img.hidden = true;
     img.removeAttribute("src");
+    img.style.width = "";
+    img.classList.remove("is-zoomed");
     empty.hidden = false;
     empty.textContent = t("galleryNoImages");
     pageLabel.textContent = "";
@@ -1046,10 +1147,13 @@ function renderGallerySlide() {
     counter.textContent = "";
     prevBtn.hidden = true;
     nextBtn.hidden = true;
+    document.querySelector(".gallery-zoom")?.setAttribute("hidden", "");
     notesEl.innerHTML = noteBits.join("");
     notesEl.hidden = !noteBits.length;
     return;
   }
+
+  document.querySelector(".gallery-zoom")?.removeAttribute("hidden");
 
   const slide = slides[index];
   const pageSlides = slides.filter((s) => s.pageId === slide.pageId);
@@ -1059,7 +1163,10 @@ function renderGallerySlide() {
   empty.hidden = true;
   if (img.getAttribute("src") !== slide.src) {
     img.src = slide.src;
-    if (wrap) wrap.scrollTop = 0;
+    if (wrap) {
+      wrap.scrollTop = 0;
+      wrap.scrollLeft = 0;
+    }
   }
   img.alt = `${galleryState.siteName} — ${slide.pageLabel}`;
   pageLabel.hidden = false;
@@ -1070,6 +1177,9 @@ function renderGallerySlide() {
   counter.textContent = `${index + 1} / ${slides.length}`;
   prevBtn.hidden = slides.length < 2;
   nextBtn.hidden = slides.length < 2;
+  // Zoom applied by resetGalleryZoomForCurrentImage / user controls
+  if (!galleryState.zoom) galleryState.zoom = 1;
+  applyGalleryZoom();
 
   if (slide.pageNote) {
     noteBits.push(
@@ -1501,6 +1611,7 @@ function applyLanguage() {
     root.querySelector(".gallery-close").title = t("galleryClose");
     root.querySelector("[data-gallery-prev]").setAttribute("aria-label", t("galleryPrev"));
     root.querySelector("[data-gallery-next]").setAttribute("aria-label", t("galleryNext"));
+    syncGalleryZoomLabels();
     renderGalleryPageTabs();
     renderGallerySlide();
   }
@@ -1967,7 +2078,35 @@ function init() {
     }
     if (e.target.closest("[data-gallery-next]")) {
       galleryStep(1);
+      return;
     }
+    if (e.target.closest("[data-gallery-zoom-in]")) {
+      galleryZoomBy(GALLERY_ZOOM_STEP);
+      return;
+    }
+    if (e.target.closest("[data-gallery-zoom-out]")) {
+      galleryZoomBy(-GALLERY_ZOOM_STEP);
+      return;
+    }
+    if (e.target.closest("[data-gallery-zoom-reset]")) {
+      galleryZoomSet(1);
+    }
+  });
+
+  galleryRoot.querySelector(".gallery-image-wrap")?.addEventListener(
+    "wheel",
+    (e) => {
+      if (!galleryState || !galleryState.slides.length) return;
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      galleryZoomBy(e.deltaY < 0 ? GALLERY_ZOOM_STEP : -GALLERY_ZOOM_STEP);
+    },
+    { passive: false }
+  );
+
+  galleryRoot.querySelector("#gallery-image")?.addEventListener("dblclick", () => {
+    if (!galleryState || !galleryState.slides.length) return;
+    galleryZoomSet(galleryState.zoom > 1 ? 1 : 2);
   });
 
   document.addEventListener("keydown", (e) => {
@@ -1981,6 +2120,15 @@ function init() {
     } else if (e.key === "ArrowRight") {
       e.preventDefault();
       galleryStep(1);
+    } else if (e.key === "+" || e.key === "=") {
+      e.preventDefault();
+      galleryZoomBy(GALLERY_ZOOM_STEP);
+    } else if (e.key === "-" || e.key === "_") {
+      e.preventDefault();
+      galleryZoomBy(-GALLERY_ZOOM_STEP);
+    } else if (e.key === "0") {
+      e.preventDefault();
+      galleryZoomSet(1);
     }
   });
 
