@@ -363,7 +363,7 @@ const I18N = {
       ["Format wklejania:", "linie w stylu „Nazwa - opis” — liczy się tylko tekst przed myślnikiem. Kolejność na liście = kolejność wklejenia."],
       ["Postęp:", "4 kolumny: Odw. / Klucz / KF / Plik. Do przejrzenia = mocniej podświetlone. Odw. = przyciemnione. Klucz = prawie wygaszone."],
       ["Priorytety:", "tablica pod listą — Max / Medium / Low. Wykryte na bieżącej zakładce podświetlają się. Kliknij nazwę = galeria."],
-      ["Screenshoty:", "kliknij nazwę strony. Zakładki = podstrony. Małe wycinki auto-przybliżają się; +/− / Ctrl+scroll = zoom. ← → screeny, Esc zamyka."],
+      ["Screenshoty:", "kliknij nazwę strony. Zakładki = podstrony. Start zawsze 100%; +/− lub Ctrl+scroll = zoom. ← → screeny, Esc zamyka."],
       ["Okna czasowe:", "strony timed: minuty każdej godziny czasu gry (np. :00–:14). Martwe = zawsze zamknięte."],
       ["Koparki:", "lista VM Grid Tier I–III z DOS/min — wybieraj najwyższe w odblokowanym tierze."],
       ["Notatnik — klucze:", "format „N - kod”. Długi kod (np. cb4f1f4c) = zaszyfrowany. Krótki (np. 9f09) = zdekryptowany."],
@@ -565,7 +565,7 @@ const I18N = {
       ["Paste format:", "lines like “Name - description” — only the text before the dash counts. List order = paste order."],
       ["Progress:", "4 columns: Vis. / Key / KF / File. To-do rows are highlighted. Visited = dimmed. Key found = nearly extinguished."],
       ["Priorities:", "board under the list — Max / Medium / Low. Sites on the current tab light up. Click a name to open the gallery."],
-      ["Screenshots:", "click a site name. Page tabs jump subpages. Small crops auto-zoom; +/− / Ctrl+scroll to zoom. Arrows switch images, Esc closes."],
+      ["Screenshots:", "click a site name. Page tabs jump subpages. Always starts at 100%; +/− or Ctrl+scroll to zoom. Arrows switch images, Esc closes."],
       ["Time windows:", "timed sites use in-game hour minutes (e.g. :00–:14). Dead sites = permanently offline."],
       ["Miners:", "VM Grid Tier I–III list with DOS/min — pick the highest in your unlocked tier."],
       ["Notebook — keys:", "format “N - code”. Long code (e.g. cb4f1f4c) = encrypted. Short (e.g. 9f09) = decrypted."],
@@ -888,29 +888,23 @@ function clampGalleryZoom(z) {
   return Math.min(GALLERY_ZOOM_MAX, Math.max(GALLERY_ZOOM_MIN, Math.round(z * 100) / 100));
 }
 
-/** Suggest zoom so narrow Steam crops fill the viewer more readably. */
-function suggestedGalleryZoom(img, wrap) {
-  if (!img || !img.naturalWidth) return 1;
-  const wrapW = wrap?.clientWidth || 0;
-  const nw = img.naturalWidth;
-  const nh = img.naturalHeight;
-  // Very small crops (click-spot closeups)
-  if (nw < 400 || (nw < 600 && nh < 400)) return 2.5;
-  if (nw < 700) return 2;
-  if (nw < 1000) return 1.5;
-  // Tall narrow strips
-  if (wrapW && nw < wrapW * 0.55) return 2;
-  return 1;
-}
-
 function applyGalleryZoom() {
   const img = document.getElementById("gallery-image");
   const label = document.querySelector("[data-gallery-zoom-reset]");
   const wrap = document.querySelector(".gallery-image-wrap");
-  if (!galleryState || !img) return;
+  if (!galleryState || !img || img.hidden) return;
+
   const z = galleryState.zoom || 1;
-  // Percentage of the wrap width — wrap must have definite width (minmax(0,1fr)).
-  img.style.width = `${z * 100}%`;
+  const baseW = wrap ? wrap.clientWidth : 0;
+
+  // Pixel width from the viewer pane — avoids % width collapsing to intrinsic size.
+  if (baseW > 0) {
+    img.style.width = `${Math.round(baseW * z)}px`;
+  } else {
+    img.style.width = `${z * 100}%`;
+  }
+  img.style.maxWidth = "none";
+  img.style.height = "auto";
   img.classList.toggle("is-zoomed", z > 1);
   if (wrap) wrap.classList.toggle("is-zoomed", z > 1);
   if (label) label.textContent = `${Math.round(z * 100)}%`;
@@ -931,22 +925,6 @@ function galleryZoomSet(z) {
     wrap.scrollTop = 0;
     wrap.scrollLeft = 0;
   }
-}
-
-function resetGalleryZoomForCurrentImage() {
-  if (!galleryState) return;
-  const img = document.getElementById("gallery-image");
-  const wrap = document.querySelector(".gallery-image-wrap");
-  const apply = () => {
-    galleryState.zoom = suggestedGalleryZoom(img, wrap);
-    applyGalleryZoom();
-    if (wrap) {
-      wrap.scrollTop = 0;
-      wrap.scrollLeft = 0;
-    }
-  };
-  if (img.complete && img.naturalWidth) apply();
-  else img.addEventListener("load", apply, { once: true });
 }
 
 function syncGalleryZoomLabels() {
@@ -1057,8 +1035,9 @@ function openGallery(siteName) {
 
   renderGalleryPageTabs();
   renderGallerySlide();
-  resetGalleryZoomForCurrentImage();
   closeBtn.focus();
+  // Defer so the dialog has a real layout width before sizing the image.
+  requestAnimationFrame(() => applyGalleryZoom());
 }
 
 function closeGallery() {
@@ -1070,6 +1049,8 @@ function closeGallery() {
   img.removeAttribute("src");
   img.alt = "";
   img.style.width = "";
+  img.style.maxWidth = "";
+  img.style.height = "";
   img.classList.remove("is-zoomed");
   document.getElementById("gallery-pages").innerHTML = "";
   galleryState = null;
@@ -1079,9 +1060,10 @@ function galleryStep(delta) {
   if (!galleryState || !galleryState.slides.length) return;
   const n = galleryState.slides.length;
   galleryState.index = (galleryState.index + delta + n) % n;
+  galleryState.zoom = 1;
   renderGalleryPageTabs();
   renderGallerySlide();
-  resetGalleryZoomForCurrentImage();
+  requestAnimationFrame(() => applyGalleryZoom());
 }
 
 function galleryJumpToPage(pageId) {
@@ -1089,9 +1071,10 @@ function galleryJumpToPage(pageId) {
   const page = galleryState.pages.find((p) => p.id === pageId);
   if (!page) return;
   galleryState.index = page.startIndex;
+  galleryState.zoom = 1;
   renderGalleryPageTabs();
   renderGallerySlide();
-  resetGalleryZoomForCurrentImage();
+  requestAnimationFrame(() => applyGalleryZoom());
 }
 function renderGalleryPageTabs() {
   const el = document.getElementById("gallery-pages");
@@ -1161,7 +1144,9 @@ function renderGallerySlide() {
 
   img.hidden = false;
   empty.hidden = true;
-  if (img.getAttribute("src") !== slide.src) {
+  const srcChanged = img.getAttribute("src") !== slide.src;
+  if (srcChanged) {
+    galleryState.zoom = 1;
     img.src = slide.src;
     if (wrap) {
       wrap.scrollTop = 0;
@@ -1177,9 +1162,12 @@ function renderGallerySlide() {
   counter.textContent = `${index + 1} / ${slides.length}`;
   prevBtn.hidden = slides.length < 2;
   nextBtn.hidden = slides.length < 2;
-  // Zoom applied by resetGalleryZoomForCurrentImage / user controls
-  if (!galleryState.zoom) galleryState.zoom = 1;
-  applyGalleryZoom();
+
+  if (galleryState.zoom == null) galleryState.zoom = 1;
+  const sizeImage = () => applyGalleryZoom();
+  if (img.complete && img.naturalWidth) sizeImage();
+  else img.addEventListener("load", sizeImage, { once: true });
+  requestAnimationFrame(sizeImage);
 
   if (slide.pageNote) {
     noteBits.push(
@@ -2130,6 +2118,10 @@ function init() {
       e.preventDefault();
       galleryZoomSet(1);
     }
+  });
+
+  window.addEventListener("resize", () => {
+    if (galleryState) applyGalleryZoom();
   });
 
   document.querySelectorAll(".info-tab").forEach((btn) => {
