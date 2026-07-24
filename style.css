@@ -820,6 +820,32 @@ button.priority-chip:hover {
   font-weight: 600;
 }
 
+.priority-chip.priority-visited {
+  opacity: 0.45;
+  color: var(--text-muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 400;
+}
+
+.priority-chip.priority-keyed {
+  opacity: 0.28;
+  color: var(--text-muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 400;
+  filter: saturate(0.4);
+}
+
+button.priority-chip.priority-visited:hover,
+button.priority-chip.priority-keyed:hover {
+  opacity: 0.75;
+  filter: none;
+  color: var(--cyan);
+}
+
 .check-btn {
   width: 28px;
   height: 28px;

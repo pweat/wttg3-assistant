@@ -1201,10 +1201,29 @@ function currentMatchedNameSet() {
   return set;
 }
 
-function priorityChip(name, hitSet) {
-  const hit = hitSet.has(normalizeName(name));
+function findFlagsForSite(flags, siteName) {
+  if (!flags) return {};
+  if (flags[siteName]) return flags[siteName];
+  const key = normalizeName(siteName);
+  for (const [name, f] of Object.entries(flags)) {
+    if (normalizeName(name) === key) return f || {};
+  }
+  return {};
+}
+
+function priorityChip(name, hitSet, flags) {
+  const f = findFlagsForSite(flags, name);
+  const done = !!(f.visited || f.key);
+  const hit = !done && hitSet.has(normalizeName(name));
   const canOpen = siteHasGallery(name);
-  const cls = `priority-chip${hit ? " priority-hit" : ""}${canOpen ? " has-gallery" : ""}`;
+  const cls = [
+    "priority-chip",
+    hit ? "priority-hit" : "",
+    f.key ? "priority-keyed" : done ? "priority-visited" : "",
+    canOpen ? "has-gallery" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
   const title = hit ? t("priorityHitHint") : name;
   if (canOpen) {
     return `<button type="button" class="${cls}" data-priority-site="${escapeHtml(name)}" data-gallery-site="${escapeHtml(name)}" title="${escapeHtml(title)}">${escapeHtml(name)}</button>`;
@@ -1212,11 +1231,11 @@ function priorityChip(name, hitSet) {
   return `<span class="${cls}" data-priority-site="${escapeHtml(name)}" title="${escapeHtml(title)}">${escapeHtml(name)}</span>`;
 }
 
-function renderPriorityWindowColumns(groups, hitSet) {
+function renderPriorityWindowColumns(groups, hitSet, flags) {
   const cols = Object.entries(groups)
     .map(([windowKey, names]) => {
       const label = `:${windowKey.replace("-", " – :")}`;
-      const chips = names.map((n) => priorityChip(n, hitSet)).join("");
+      const chips = names.map((n) => priorityChip(n, hitSet, flags)).join("");
       return `<div class="priority-col">
         <div class="priority-col-head">${escapeHtml(label)}</div>
         <div class="priority-col-body">${chips}</div>
@@ -1230,7 +1249,8 @@ function renderPriorityBoard() {
   const board = document.getElementById("priority-board");
   if (!board) return;
   const hitSet = currentMatchedNameSet();
-  const lowChips = SITE_PRIORITY.low.map((n) => priorityChip(n, hitSet)).join("");
+  const flags = loadFlags();
+  const lowChips = SITE_PRIORITY.low.map((n) => priorityChip(n, hitSet, flags)).join("");
 
   board.innerHTML = `
     <div class="priority-board-head">
@@ -1238,11 +1258,11 @@ function renderPriorityBoard() {
     </div>
     <div class="priority-section">
       <div class="priority-section-title priority-max">${escapeHtml(t("priorityMax"))}</div>
-      ${renderPriorityWindowColumns(SITE_PRIORITY.max, hitSet)}
+      ${renderPriorityWindowColumns(SITE_PRIORITY.max, hitSet, flags)}
     </div>
     <div class="priority-section">
       <div class="priority-section-title priority-med">${escapeHtml(t("priorityMedium"))}</div>
-      ${renderPriorityWindowColumns(SITE_PRIORITY.medium, hitSet)}
+      ${renderPriorityWindowColumns(SITE_PRIORITY.medium, hitSet, flags)}
     </div>
     <div class="priority-section">
       <div class="priority-section-title priority-low">${escapeHtml(t("priorityLow"))}</div>
